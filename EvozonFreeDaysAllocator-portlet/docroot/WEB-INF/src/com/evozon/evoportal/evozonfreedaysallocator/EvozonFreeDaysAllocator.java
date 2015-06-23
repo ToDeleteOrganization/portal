@@ -25,12 +25,14 @@ import com.evozon.evoportal.vacation.model.VacationType;
 import com.evozon.evoportal.vacation.service.InboxLocalServiceUtil;
 import com.evozon.evoportal.vacation.service.VacationDAO;
 import com.evozon.evoportal.vacation.service.VacationStatusUtil;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.messaging.MessageListener;
 import com.liferay.portal.kernel.messaging.MessageListenerException;
 import com.liferay.portal.model.User;
+import com.liferay.portal.service.UserLocalServiceUtil;
 
 /**
  * Portlet implementation class EvoFreeDays
@@ -42,26 +44,23 @@ public class EvozonFreeDaysAllocator extends AllocatorScheduler implements Messa
 	public void receive(Message message) throws MessageListenerException {
 		log.debug("************>> Job has been started! <<**************");
 		try {
-//			List<User> usersList = getUsersToSimulate();
-//			if (usersList.isEmpty()) {
-//				usersList = UserLocalServiceUtil.getUsers(QueryUtil.ALL_POS, QueryUtil.ALL_POS);
-//			}
-//
-//			Calendar today = BenefitDayLocalServiceUtil.getUserSelectedDate();
-//
-//			int dayOfMonth = today.get(Calendar.DAY_OF_MONTH);
-//			if (dayOfMonth == today.getActualMinimum(Calendar.DAY_OF_MONTH)) {
-//				handleFirstDayOfMonth(usersList);
-//
-//			} else if (dayOfMonth == today.getActualMaximum(Calendar.DAY_OF_MONTH)) {
-//				handleLastDayOfMonth(usersList);
-//
-//			} else {
-//				handleMonthAllocation(usersList);
-//			}
+			List<User> usersList = getUsersToSimulate();
+			if (usersList.isEmpty()) {
+				usersList = UserLocalServiceUtil.getUsers(QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+			}
 
-			List<BenefitDayQueue> monthBonuses = BenefitDayQueueLocalServiceUtil.findBenefitDaysAllocatedInYearAndMonth(Calendar.JUNE, 2015);
-			EvoportalEmailUtil.sendMailWithAnniversaryUsers(this.getMonthlyBonusesReceivers(), monthBonuses);
+			Calendar today = BenefitDayLocalServiceUtil.getUserSelectedDate();
+
+			int dayOfMonth = today.get(Calendar.DAY_OF_MONTH);
+			if (dayOfMonth == today.getActualMinimum(Calendar.DAY_OF_MONTH)) {
+				handleFirstDayOfMonth(usersList);
+
+			} else if (dayOfMonth == today.getActualMaximum(Calendar.DAY_OF_MONTH)) {
+				handleLastDayOfMonth(usersList);
+
+			} else {
+				handleMonthAllocation(usersList);
+			}
 
 			log.info("Finished checkin for users anniversary.");
 		} catch (Exception e) {

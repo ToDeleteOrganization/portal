@@ -1,8 +1,6 @@
 package com.evozon.evoportal.evozonfreedaysallocator;
 
-import java.util.Calendar;
 import java.util.List;
-import java.util.Locale;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -12,8 +10,9 @@ import org.apache.log4j.Logger;
 import com.evozon.evoportal.evozonfreedaysallocator.mail.AccountUpdateMailFactory;
 import com.evozon.evoportal.evozonfreedaysallocator.mail.AllocatorMailFormatFactory;
 import com.evozon.evoportal.evozonfreedaysallocator.mail.AllocatorMailSender;
+import com.evozon.evoportal.evozonfreedaysallocator.mail.AnniversaryMailFactory;
 import com.evozon.evoportal.evozonfreedaysallocator.mail.ExtraDayAllocatorMailFactory;
-import com.evozon.evoportal.evozonfreedaysallocator.mail.MonthlyAnniversaryMailFactory;
+import com.evozon.evoportal.evozonfreedaysallocator.mail.MonthlyUsersAnniversariesMailFactory;
 import com.evozon.evoportal.evozonfreedaysallocator.mail.NotifiableAllocatorMailFactory;
 import com.evozon.evoportal.evozonfreedaysallocator.model.BenefitDayQueue;
 import com.liferay.mail.service.MailServiceUtil;
@@ -105,32 +104,21 @@ public final class EvoportalEmailUtil {
 	}
 
 	public static void sendMailAtAnniversary(User receivingUser, List<User> allUsers, int evozonYears, boolean firstOfMonth) throws AddressException, SystemException, PortalException {
-		String mailSubject = "+1 year in Evozon";
+		NotifiableAllocatorMailFactory amf = new AnniversaryMailFactory(evozonYears, firstOfMonth);
+		amf.setReceivingUser(receivingUser);
+		amf.setNotifiedUsers(allUsers);
 
-		String mailContent = receivingUser.getFullName() + " has received a free day for ";
-		mailContent += "being an Evozon employee for " + evozonYears + " year(s).<br/>";
-
-		mailContent += "<br/>";
-		if (firstOfMonth) {
-			mailContent += "The new bonus day will be allocated and usable starting from the beginning of this month.";
-		} else {
-			mailContent += "The new bonus day will be allocated and usable starting 1st of next month.";
-		}
-
-		sendMail(receivingUser, mailSubject, mailContent);
-		log.debug(mailContent);
-
-		for (User user : allUsers) {
-			sendMail(user, mailSubject, mailContent);
-		}
+		sendMail(amf);
 	}
 
+	// TODO: check if this is used somewhere
 	public static void sendMailAtAnniversary(List<User> users, int totalFreeDays, int lastYearDays, int bonusEVZ, int bonusEXP) throws AddressException, SystemException, PortalException {
+		User receivingUser = users.remove(0);
+
 		String title = (bonusEVZ > 0) ? "+1" : "+2";
 		String mailSubject = title + " year in Evozon";
 
-		User user = users.get(0);
-		String mailContent = user.getFirstName() + " " + user.getLastName() + " has received a free day for ";
+		String mailContent = receivingUser.getFirstName() + " " + receivingUser.getLastName() + " has received a free day for ";
 		if (bonusEVZ > 0) {
 			mailContent += "being an Evozon employee for " + bonusEVZ + " year(s).<br/>";
 		} else if (bonusEXP > 0) {
@@ -141,14 +129,14 @@ public final class EvoportalEmailUtil {
 
 		mailContent += "<br/>";
 		mailContent += "<br/>";
-		mailContent += user.getFirstName() + " currently has " + totalFreeDays + " free days.";
+		mailContent += receivingUser.getFirstName() + " currently has " + totalFreeDays + " free days.";
 		if (lastYearDays > 0) {
 			mailContent = mailContent.substring(0, mailContent.length() - 1) + " (" + lastYearDays + " of which are from last year).";
 		}
 		mailContent += "<br/>";
 		mailContent += "The total of free days will be updated on the 1st of next month.";
 
-		sendMail(user, mailSubject, mailContent);
+		sendMail(receivingUser, mailSubject, mailContent);
 		log.debug(mailContent);
 
 		for (int i = 1; i < users.size(); i++) {
@@ -162,8 +150,7 @@ public final class EvoportalEmailUtil {
 		edMailFactory.setReceivingUser(user);
 		edMailFactory.setNotifiedUsers(notifiedUsers);
 
-		sender.setAllocatorMail(edMailFactory);
-		sender.sendMails();
+		sendMail(edMailFactory);		
 	}
 
 	public static void sendMailAccountUpdate(List<User> users, UpdatedFieldMarker marker) throws AddressException, SystemException, PortalException {
@@ -173,14 +160,17 @@ public final class EvoportalEmailUtil {
 		accountUpdateFactory.setReceivingUser(updatedUser);
 		accountUpdateFactory.setNotifiedUsers(users);
 
-		sender.setAllocatorMail(accountUpdateFactory);
-		sender.sendMails();
+		sendMail(accountUpdateFactory);
 	}
 
 	public static void sendMailWithAnniversaryUsers(List<User> toUsers, List<BenefitDayQueue> queuedDays) throws AddressException, SystemException, PortalException {
-		final AllocatorMailFormatFactory mamf = new MonthlyAnniversaryMailFactory(queuedDays, toUsers);
-		sender.setAllocatorMail(mamf);
-		sender.sendMails();
+		final AllocatorMailFormatFactory mamf = new MonthlyUsersAnniversariesMailFactory(queuedDays, toUsers);
+		sendMail(mamf);
+	}
+
+	private static void sendMail(AllocatorMailFormatFactory amff) {
+		sender.setAllocatorMail(amff);
+		sender.sendMails();		
 	}
 
 	private static void sendMail(User user, String mailSubject, String mailContent) throws AddressException, SystemException, PortalException {
