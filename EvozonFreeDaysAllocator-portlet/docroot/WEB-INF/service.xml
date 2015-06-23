@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE service-builder PUBLIC "-//Liferay//DTD Service Builder 6.1.0//EN" "http://www.liferay.com/dtd/liferay-service-builder_6_1_0.dtd">
+<service-builder
+        package-path="com.evozon.evoportal.evozonfreedaysallocator">
+    <author>Cristina Kiss</author>
+    <namespace>BenefitDay</namespace>
+
+    <entity name="BenefitDay" local-service="true" remote-service="false">
+
+        <!-- PK fields -->
+        <column name="entryId" type="long" primary="true" />
+
+        <!-- Audit fields -->
+        <column name="type" type="String" />
+        <column name="userId" type="long" />
+        <column name="daysNo" type="int" />
+		 <column name="allocatedDate" type="Date" />
+		<column name="comment" type="String" />
+		
+        <!-- Order -->
+        <order by="asc">
+            <order-column name="type" />
+        </order>
+
+        <!-- Finder methods -->
+        <finder name="UserId" return-type="Collection">
+            <finder-column name="userId" />
+        </finder>
+        <finder name="Type" return-type="Collection">
+            <finder-column name="type" />
+        </finder>
+        <finder name="UserId_Type" return-type="Collection">
+            <finder-column name="userId" />
+            <finder-column name="type" />
+        </finder>
+    </entity>
+
+    <entity name="BenefitDayQueue" local-service="true" remote-service="false">
+
+        <!-- PK fields -->
+        <column name="entryId" type="long" primary="true" />
+
+        <!-- Audit fields -->
+        <column name="type" type="String" />
+        <column name="userId" type="long" />
+        <column name="daysNo" type="int" />
+        <column name="queued" type="boolean" />
+        <column name="addedDate" type="Date" />
+        <column name="allocatedDate" type="Date" />
+
+        <!-- Order -->
+        <order by="asc">
+            <order-column name="type" />
+        </order>
+
+        <!-- Finder methods -->
+        <finder name="UserId" return-type="Collection">
+            <finder-column name="userId" />
+        </finder>
+        <finder name="Type" return-type="Collection">
+            <finder-column name="type" />
+        </finder>
+        <finder name="UserId_Queued" return-type="Collection">
+            <finder-column name="userId" />
+            <finder-column name="queued" />
+        </finder>
+        <finder name="UserId_Allocated" return-type="Collection">
+            <finder-column name="userId" />
+            <finder-column name="allocatedDate" />
+        </finder>
+        <finder name="UserId_Type" return-type="Collection">
+            <finder-column name="userId" />
+            <finder-column name="type" />
+        </finder>
+    </entity>
+    
+    <entity name="FreeDaysHistoryEntry" local-service="true" remote-service="false">
+
+		<!-- PK fields -->
+
+		<column name="entryId" type="long" primary="true" />
+
+		<!-- Audit fields -->
+
+		<column name="userId" type="long" />
+		<column name="operation" type="String" />
+		
+		<column name="oldValue" type="int" />
+		<column name="daysNo" type="int" />
+		<column name="newValue" type="int" />
+		
+		<column name="createDate" type="Date" />
+
+		<column name="eventType" type="String" />
+		<column name="description" type="String" />
+
+		<!-- Order -->
+
+		<order by="asc">
+			<order-column name="createDate" />
+		</order>
+
+		<!-- Finder methods -->
+
+		<finder name="UserId" return-type="Collection">
+			<finder-column name="userId" />
+		</finder>
+		<finder name="UserId_Operation" return-type="Collection">
+			<finder-column name="userId" />
+			<finder-column name="operation" />
+		</finder>
+		<finder name="UserId_EventType" return-type="Collection">
+			<finder-column name="userId" />
+			<finder-column name="eventType" />
+		</finder>
+		<finder name="UserId_CreateDate" return-type="Collection">
+			<finder-column name="userId" />
+			<finder-column name="createDate" />
+		</finder>
+		<finder name="CreateDate" return-type="Collection">
+			<finder-column name="createDate" />
+		</finder>
+	</entity>
+</service-builder>

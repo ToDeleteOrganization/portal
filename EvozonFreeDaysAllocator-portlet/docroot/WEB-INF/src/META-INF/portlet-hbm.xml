@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping default-lazy="false" auto-import="false">
+	<import class="com.evozon.evoportal.evozonfreedaysallocator.model.BenefitDay" />
+	<import class="com.evozon.evoportal.evozonfreedaysallocator.model.BenefitDayQueue" />
+	<import class="com.evozon.evoportal.evozonfreedaysallocator.model.FreeDaysHistoryEntry" />
+	<class name="com.evozon.evoportal.evozonfreedaysallocator.model.impl.BenefitDayImpl" table="BenefitDay_BenefitDay">
+		<cache usage="read-write" />
+		<id name="entryId" type="long">
+			<generator class="assigned" />
+		</id>
+		<property name="type" type="com.liferay.portal.dao.orm.hibernate.StringType" column="type_" />
+		<property name="userId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
+		<property name="daysNo" type="com.liferay.portal.dao.orm.hibernate.IntegerType" />
+		<property name="allocatedDate" type="org.hibernate.type.TimestampType" />
+		<property name="comment" type="com.liferay.portal.dao.orm.hibernate.StringType" column="comment_" />
+	</class>
+	<class name="com.evozon.evoportal.evozonfreedaysallocator.model.impl.BenefitDayQueueImpl" table="BenefitDay_BenefitDayQueue">
+		<cache usage="read-write" />
+		<id name="entryId" type="long">
+			<generator class="assigned" />
+		</id>
+		<property name="type" type="com.liferay.portal.dao.orm.hibernate.StringType" column="type_" />
+		<property name="userId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
+		<property name="daysNo" type="com.liferay.portal.dao.orm.hibernate.IntegerType" />
+		<property name="queued" type="com.liferay.portal.dao.orm.hibernate.BooleanType" />
+		<property name="addedDate" type="org.hibernate.type.TimestampType" />
+		<property name="allocatedDate" type="org.hibernate.type.TimestampType" />
+	</class>
+	<class name="com.evozon.evoportal.evozonfreedaysallocator.model.impl.FreeDaysHistoryEntryImpl" table="BenefitDay_FreeDaysHistoryEntry">
+		<cache usage="read-write" />
+		<id name="entryId" type="long">
+			<generator class="assigned" />
+		</id>
+		<property name="userId" type="com.liferay.portal.dao.orm.hibernate.LongType" />
+		<property name="operation" type="com.liferay.portal.dao.orm.hibernate.StringType" />
+		<property name="oldValue" type="com.liferay.portal.dao.orm.hibernate.IntegerType" />
+		<property name="daysNo" type="com.liferay.portal.dao.orm.hibernate.IntegerType" />
+		<property name="newValue" type="com.liferay.portal.dao.orm.hibernate.IntegerType" />
+		<property name="createDate" type="org.hibernate.type.TimestampType" />
+		<property name="eventType" type="com.liferay.portal.dao.orm.hibernate.StringType" />
+		<property name="description" type="com.liferay.portal.dao.orm.hibernate.StringType" />
+	</class>
+</hibernate-mapping>

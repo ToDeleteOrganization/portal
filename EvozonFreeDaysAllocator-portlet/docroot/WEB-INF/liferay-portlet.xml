@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<!DOCTYPE liferay-portlet-app PUBLIC "-//Liferay//DTD Portlet Application 6.1.0//EN" "http://www.liferay.com/dtd/liferay-portlet-app_6_1_0.dtd">
+
+<liferay-portlet-app>
+
+	<portlet>
+		<portlet-name>evofreedaysallocator</portlet-name>
+		<icon>/icon.png</icon>
+
+		<scheduler-entry>
+			<scheduler-description>
+				This scheduler is used to calculate users free
+				days.
+			</scheduler-description>
+			<scheduler-event-listener-class>
+				com.evozon.evoportal.evozonfreedaysallocator.EvozonFreeDaysAllocator
+			</scheduler-event-listener-class>
+
+			<trigger>
+<!-- 				<cron> -->
+					<!-- secunda minut ora zi luna job -->
+<!-- 					<cron-trigger-value>0 0 2 * * ?</cron-trigger-value> -->
+<!-- 				</cron> -->
+
+				<simple>
+					<simple-trigger-value>1</simple-trigger-value>
+					<time-unit>day</time-unit>
+				</simple>
+
+			</trigger>
+
+		</scheduler-entry>
+
+		<scheduler-entry>
+			<scheduler-description>
+				This scheduler is used to activate/deactivate
+				users.
+			</scheduler-description>
+			<scheduler-event-listener-class>
+				com.evozon.evoportal.evozonfreedaysallocator.ActivateDeactivateUsers
+			</scheduler-event-listener-class>
+
+			<trigger>
+				<cron>
+					<!-- secunda minut ora zi luna job -->
+					<cron-trigger-value>0 0 2 * * ?</cron-trigger-value>
+				</cron>
+
+<!-- 				<simple> -->
+<!-- 					<simple-trigger-value>1</simple-trigger-value> -->
+<!-- 					<time-unit>day</time-unit> -->
+<!-- 				</simple> -->
+
+			</trigger>
+
+		</scheduler-entry>
+
+
+		<instanceable>false</instanceable>
+		<header-portlet-css>/css/main.css</header-portlet-css>
+		<footer-portlet-javascript>
+			/js/main.js
+		</footer-portlet-javascript>
+		<css-class-wrapper>evofreedaysallocator-portlet</css-class-wrapper>
+	</portlet>
+	<role-mapper>
+		<role-name>administrator</role-name>
+		<role-link>Administrator</role-link>
+	</role-mapper>
+	<role-mapper>
+		<role-name>guest</role-name>
+		<role-link>Guest</role-link>
+	</role-mapper>
+	<role-mapper>
+		<role-name>power-user</role-name>
+		<role-link>Power User</role-link>
+	</role-mapper>
+	<role-mapper>
+		<role-name>user</role-name>
+		<role-link>User</role-link>
+	</role-mapper>
+</liferay-portlet-app>

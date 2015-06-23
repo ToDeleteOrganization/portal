@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm http://java.sun.com/xml/ns/persistence/orm_1_0.xsd">
+	<persistence-unit-metadata>
+		<xml-mapping-metadata-complete/>
+		<persistence-unit-defaults>
+			<access>PROPERTY</access>
+		</persistence-unit-defaults>
+	</persistence-unit-metadata>
+	<mapped-superclass class="com.evozon.evoportal.evozonfreedaysallocator.model.impl.BenefitDayModelImpl">
+		<attributes>
+			<id name="entryId" />
+			<basic name="type">
+				<column name="TYPE_" />
+			</basic>
+			<basic name="userId" />
+			<basic name="daysNo" />
+			<basic name="allocatedDate">
+				<temporal>TIMESTAMP</temporal>
+			</basic>
+			<basic name="comment">
+				<column name="COMMENT_" />
+			</basic>
+			<transient name="modelAttributes" />
+			<transient name="primaryKey" />
+			<transient name="primaryKeyObj" />
+			<transient name="userUuid" />
+		</attributes>
+	</mapped-superclass>
+	<mapped-superclass class="com.evozon.evoportal.evozonfreedaysallocator.model.impl.BenefitDayQueueModelImpl">
+		<attributes>
+			<id name="entryId" />
+			<basic name="type">
+				<column name="TYPE_" />
+			</basic>
+			<basic name="userId" />
+			<basic name="daysNo" />
+			<basic name="queued" />
+			<basic name="addedDate">
+				<temporal>TIMESTAMP</temporal>
+			</basic>
+			<basic name="allocatedDate">
+				<temporal>TIMESTAMP</temporal>
+			</basic>
+			<transient name="modelAttributes" />
+			<transient name="primaryKey" />
+			<transient name="primaryKeyObj" />
+			<transient name="userUuid" />
+		</attributes>
+	</mapped-superclass>
+	<mapped-superclass class="com.evozon.evoportal.evozonfreedaysallocator.model.impl.FreeDaysHistoryEntryModelImpl">
+		<attributes>
+			<id name="entryId" />
+			<basic name="userId" />
+			<basic name="operation" />
+			<basic name="oldValue" />
+			<basic name="daysNo" />
+			<basic name="newValue" />
+			<basic name="createDate">
+				<temporal>TIMESTAMP</temporal>
+			</basic>
+			<basic name="eventType" />
+			<basic name="description" />
+			<transient name="modelAttributes" />
+			<transient name="primaryKey" />
+			<transient name="primaryKeyObj" />
+			<transient name="userUuid" />
+		</attributes>
+	</mapped-superclass>
+	<entity class="com.evozon.evoportal.evozonfreedaysallocator.model.impl.BenefitDayImpl" name="BenefitDay">
+		<table name="BenefitDay_BenefitDay" />
+		<attributes />
+	</entity>
+	<entity class="com.evozon.evoportal.evozonfreedaysallocator.model.impl.BenefitDayQueueImpl" name="BenefitDayQueue">
+		<table name="BenefitDay_BenefitDayQueue" />
+		<attributes />
+	</entity>
+	<entity class="com.evozon.evoportal.evozonfreedaysallocator.model.impl.FreeDaysHistoryEntryImpl" name="FreeDaysHistoryEntry">
+		<table name="BenefitDay_FreeDaysHistoryEntry" />
+		<attributes />
+	</entity>
+</entity-mappings>

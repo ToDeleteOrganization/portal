@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+
+<model-hints>
+	<model name="com.evozon.evoportal.evozonfreedaysallocator.model.BenefitDay">
+		<field name="entryId" type="long" />
+		<field name="type" type="String" />
+		<field name="userId" type="long" />
+		<field name="daysNo" type="int" />
+		<field name="allocatedDate" type="Date" />
+		<field name="comment" type="String" />
+	</model>
+	<model name="com.evozon.evoportal.evozonfreedaysallocator.model.BenefitDayQueue">
+		<field name="entryId" type="long" />
+		<field name="type" type="String" />
+		<field name="userId" type="long" />
+		<field name="daysNo" type="int" />
+		<field name="queued" type="boolean" />
+		<field name="addedDate" type="Date" />
+		<field name="allocatedDate" type="Date" />
+	</model>
+	<model name="com.evozon.evoportal.evozonfreedaysallocator.model.FreeDaysHistoryEntry">
+		<field name="entryId" type="long" />
+		<field name="userId" type="long" />
+		<field name="operation" type="String" />
+		<field name="oldValue" type="int" />
+		<field name="daysNo" type="int" />
+		<field name="newValue" type="int" />
+		<field name="createDate" type="Date" />
+		<field name="eventType" type="String" />
+		<field name="description" type="String" />
+	</model>
+</model-hints>
