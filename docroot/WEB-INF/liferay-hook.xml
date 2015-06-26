@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!DOCTYPE hook PUBLIC "-//Liferay//DTD Hook 6.1.0//EN" "http://www.liferay.com/dtd/liferay-hook_6_1_0.dtd">
+
+<hook>
+	<portal-properties>portal.properties</portal-properties> 
+    <language-properties>content/Language_en.properties</language-properties>
+    <custom-jsp-dir>/custom_jsps</custom-jsp-dir>
+    <struts-action>
+        <struts-action-path>/my_account/edit_user</struts-action-path>
+        <struts-action-impl>com.evozon.evoportal.my_account.MyAccountSaveButtonCustomAction</struts-action-impl>
+    </struts-action>
+    <struts-action>
+        <struts-action-path>/users_admin/edit_user</struts-action-path>
+        <struts-action-impl>com.evozon.evoportal.my_account.EditUserSaveButtonCustomAction</struts-action-impl>
+    </struts-action>
+</hook>
