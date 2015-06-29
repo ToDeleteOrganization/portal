@@ -1,23 +1,22 @@
 package com.evozon.evoportal.myaccount.builder;
 
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.model.User;
+import com.liferay.portal.util.PortalUtil;
 
 public abstract class ManagementAccountActionOperation extends AbstractAccountActionOperation {
-
-	// TODO: change this
-	protected User changedUser;
 
 	public ManagementAccountActionOperation(ActionPhaseParameters app) {
 		super(app);
 	}
 
-	// TODO:
-	public User getCurrentUser() {
-		return null;
+	public User getCurrentUser() throws PortalException, SystemException {
+		return PortalUtil.getUser(getActionRequest());
 	}
 
-	public User getUser() {
-		return null;
+	public User getUser() throws PortalException, SystemException {
+		return PortalUtil.getSelectedUser(getActionRequest());
 	}
 
 }

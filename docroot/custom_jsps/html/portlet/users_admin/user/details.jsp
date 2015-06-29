@@ -65,6 +65,9 @@
 		hidePhones = isPhoneHidden(selUser);
 		hideBirthday = isBirthdayHidden(selUser);
 		isStudent= isStudent(selUser);
+	} else if (SessionMessages.contains(renderRequest, "previousFunctieCIM")) {
+		oldFunctieValue = (String)SessionMessages.get(renderRequest, "previousFunctieCIM");
+		request.setAttribute("functie.cim.custom", new String[] {oldFunctieValue});
 	}
 
 	boolean isMyAccountUpdate = !portletName.equals(PortletKeys.USERS_ADMIN);

@@ -8,7 +8,7 @@ public class FunctieCIMValidator extends AbstractValidator {
 
 	private static final String PLEASE_SPECIFY_FUNCTIE_CIM = "please-specify-functiecim";
 
-	private static final String PREVIOUS_FUNCTIE_CIM = "please-specify-functiecim";
+	private static final String PREVIOUS_FUNCTIE_CIM = "previousFunctieCIM";
 
 	private final String functieCIM;
 

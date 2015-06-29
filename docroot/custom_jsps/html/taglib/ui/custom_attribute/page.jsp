@@ -3,7 +3,8 @@
  * Copyright (c) 2000-2012 Liferay, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of the Liferay Enterprise
- * Subscription License ("License"). You may not use this file except in
+ * Subscription License ("License"). You may not use this file except invalue
+ 
  * compliance with the License. You can obtain a copy of the License by
  * contacting Liferay, Inc. See the License for the specific language governing
  * permissions and limitations under the License, including but not limited to
@@ -26,6 +27,7 @@
 <%
 String INTERNSHIP_USER_TYPE = "internship";
 String SCHOLARSHIP_USER_TYPE = "scholarship";
+String LIFERAY_NEW_LINE = "liferay:new-line";
 
 String randomNamespace = PortalUtil.generateRandomKey(request, "taglib_ui_custom_attribute_page") + StringPool.UNDERLINE;
 
@@ -34,9 +36,11 @@ long classPK = GetterUtil.getLong((String)request.getAttribute("liferay-ui:custo
 boolean editable = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:custom-attribute:editable"));
 boolean label = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:custom-attribute:label"));
 String name = (String)request.getAttribute("liferay-ui:custom-attribute:name");
-String userType = (String)request.getAttribute("user.type");
 
-String LIFERAY_NEW_LINE = "liferay:new-line";
+String userType = (String)request.getAttribute("user.type");
+userType = (userType == null) ? StringPool.BLANK : userType;
+
+Serializable customDefaultValue = (Serializable)request.getAttribute(name.replace(" ", ".").toLowerCase() + ".custom");
 
 ExpandoBridge expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(company.getCompanyId(), className, classPK);
 
@@ -612,23 +616,27 @@ ExpandoBridge expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(company.
 
 										<%
 										String[] curValue = (String[])value;
+										if ((curValue.length == 0) && (customDefaultValue != null)) {
+											curValue = (String[])customDefaultValue;
+										}
 
 										for (String curDefaultValue : (String[])defaultValue) {
 											String optionValue = HtmlUtil.escape(curDefaultValue);
 											boolean isSelected = ((curValue.length > 0) && ArrayUtil.contains(curValue, curDefaultValue));
 
-											if (INTERNSHIP_USER_TYPE.equals(userType) && curDefaultValue.equalsIgnoreCase("intern")) {
-												isSelected = true;
-
-											} else if (SCHOLARSHIP_USER_TYPE.equals(userType) && curDefaultValue.toLowerCase().contains("bursier")) {
-												isSelected = true;
-
-											} else if (LIFERAY_NEW_LINE.equals(curDefaultValue)) {
-												isSelected = true;
-												optionValue = StringPool.BLANK;
-
+											if (!isSelected) {
+												if (INTERNSHIP_USER_TYPE.equals(userType) && curDefaultValue.equalsIgnoreCase("intern")) {
+													isSelected = true;
+	
+												} else if (SCHOLARSHIP_USER_TYPE.equals(userType) && curDefaultValue.toLowerCase().contains("bursier")) {
+													isSelected = true;
+	
+												} else if (LIFERAY_NEW_LINE.equals(curDefaultValue)) {
+													isSelected = true;
+													optionValue = StringPool.BLANK;
+	
+												}
 											}
-
 
 											%>
 												<option <%= isSelected ? "selected" : "" %> value="<%= HtmlUtil.escape(curDefaultValue) %>"><%= optionValue %></option>

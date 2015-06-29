@@ -21,8 +21,14 @@ public class EmailAddressValidator extends AbstractValidator {
 	public ValidationResult validate() {
 		final ActionValidationResult res = new ActionValidationResult();
 
-		final String emailDomain = emailAddressToValidate.split(EMAIL_ADDRESS_DELIMITER)[1];
-		if (!VALID_EMAIL_ADDRESS.equalsIgnoreCase(emailDomain)) {
+		String[] mailcomp = emailAddressToValidate.split(EMAIL_ADDRESS_DELIMITER);
+		if (mailcomp.length == 2) {
+			final String emailDomain = emailAddressToValidate.split(EMAIL_ADDRESS_DELIMITER)[1];
+
+			if (!VALID_EMAIL_ADDRESS.equalsIgnoreCase(emailDomain)) {
+				res.addError(buildValidationMessage(NOT_A_COMPANY_EMAIL_ADDRESS, new UserEmailAddressException(NOT_A_COMPANY_EMAIL_ADDRESS)));
+			}
+		} else {
 			res.addError(buildValidationMessage(NOT_A_COMPANY_EMAIL_ADDRESS, new UserEmailAddressException(NOT_A_COMPANY_EMAIL_ADDRESS)));
 		}
 

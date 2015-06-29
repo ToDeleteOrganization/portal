@@ -17,16 +17,14 @@ public class AccountActionPhase implements AccountPhase<ActionPhaseParameters> {
 
 	public void executePhase(ActionPhaseParameters pp) {
 		final ActionAccountOperation actionOperation = AccountOperationBuilder.buildAccountActionOperation(pp);
-		final ActionRequest request = pp.getRequest();
 		final ValidationResult validationResult = actionOperation.isActionValid();
 
 		if (validationResult.hasMessages()) {
-			addMessagesToSession(validationResult.getValidationMessages(), request);
+			addMessagesToSession(validationResult.getValidationMessages(), pp.getRequest());
 		}
 
-
 		if (validationResult.hasErrors()) {
-			addErrorsToSession(validationResult.getValidationErrors(), request);
+			addErrorsToSession(validationResult.getValidationErrors(), pp.getRequest());
 
 		} else {
 			try {
@@ -43,7 +41,13 @@ public class AccountActionPhase implements AccountPhase<ActionPhaseParameters> {
 
 		// Add error messages to session for UI rendering
 		for (AccountValidationMessage err : validationErrors) {
-			SessionErrors.add(actionRequest, err.getMessageKey(), err.getMessageObject());
+			Object errorObj = err.getMessageObject();
+
+			if (errorObj instanceof Exception) {
+				SessionErrors.add(actionRequest, errorObj.getClass());
+			} else {
+				SessionErrors.add(actionRequest, err.getMessageKey(), errorObj);
+			}
 			categories.add(err.getAccountCategory());
 		}
 

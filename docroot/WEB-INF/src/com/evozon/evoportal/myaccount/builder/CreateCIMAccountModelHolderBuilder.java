@@ -7,7 +7,7 @@ import javax.portlet.PortletRequest;
 import com.evozon.evoportal.my_account.util.MyAccountConstants;
 import com.liferay.compat.portal.util.PortalUtil;
 
-public class CreateCIMAccountModelHolderBuilder extends CreateAccountModelHolderBuilder {
+public class CreateCIMAccountModelHolderBuilder extends RequestAccountModelHolderBuilder {
 
 	public CreateCIMAccountModelHolderBuilder(PortletRequest request) {
 		super(request);
@@ -19,7 +19,7 @@ public class CreateCIMAccountModelHolderBuilder extends CreateAccountModelHolder
 	}
 
 	protected Date getCIMStartDate() {
-		return super.getStartDate();
+		return super.getDateFromRequest("hired");
 	}
 
 }

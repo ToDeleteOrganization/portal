@@ -7,6 +7,8 @@ import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 
 import com.evozon.evoportal.my_account.AccountModelHolder;
+import com.evozon.evoportal.my_account.pmreports.integration.PMReportsIntegration;
+import com.evozon.evoportal.ws.pmreports.model.PmResponseStatus;
 import com.evozon.evoportal.ws.pmreports.util.PMReportsIntegrationUtil;
 import com.liferay.compat.portal.util.PortalUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -64,14 +66,27 @@ public abstract class AbstractAccountActionOperation implements ActionAccountOpe
 		this.validationRules.add(validator);
 	}
 
+	public void addValidationRules(List<Validator> validators) {
+		if ((validators != null) && !validators.isEmpty()) {
+			this.validationRules.addAll(validators);
+		}
+	}
+
 	protected void executeDefaultLiferayProcess() throws Exception {
 		ActionAccountOperation defaultActionOp = new DefaultAccountActionOperation(actionPhaseParameters);
 		defaultActionOp.execute();
 	}
 
-	protected void executePMReportsIntegration() {
+	protected void executePMReportsIntegration(final PMReportsIntegration pmRepIntegration) {
 		if (PMReportsIntegrationUtil.isPmReportsIntegrationActivated()) {
-			
+			PmResponseStatus interationResponse = pmRepIntegration.executeIntegration();
+
+			if (interationResponse != null) {
+				// TODO: add general behavior depending on the response
+				logger.info("Integration: " + pmRepIntegration.getClass().getName() + " ended with status " + interationResponse);
+			}
+		} else if (logger.isDebugEnabled()) {
+			logger.debug("PM Reports connection is disabled for this server.");
 		}
 	}
 

@@ -7,7 +7,7 @@ import javax.portlet.PortletRequest;
 import com.evozon.evoportal.my_account.util.MyAccountConstants;
 import com.liferay.compat.portal.util.PortalUtil;
 
-public class CreateScholarshipAccountModelHolderBuilder extends CreateAccountModelHolderBuilder {
+public class CreateScholarshipAccountModelHolderBuilder extends RequestAccountModelHolderBuilder {
 
 	public CreateScholarshipAccountModelHolderBuilder(PortletRequest request) {
 		super(request);

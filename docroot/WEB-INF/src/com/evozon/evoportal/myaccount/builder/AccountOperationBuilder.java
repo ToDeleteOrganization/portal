@@ -1,5 +1,8 @@
 package com.evozon.evoportal.myaccount.builder;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletConfig;
@@ -47,43 +50,64 @@ public final class AccountOperationBuilder {
 
 		String command = ParamUtil.getString(app.getRequest(), Constants.CMD, AccountOperationBuilder.DEFAULT);
 		if (Constants.ADD.equals(command)) {
-			operation = buildAddAccountActionOperation(app);
+			operation = AccountOperationBuilder.buildAddAccountActionOperation(app);
 
+		} if (Constants.UPDATE.equals(command)) {
+			operation = AccountOperationBuilder.buildUpdateAccountActionOperation(app);
 		}
 
 		return operation;
 	}
 
+	private static ActionAccountOperation buildUpdateAccountActionOperation(final ActionPhaseParameters app) {
+		ManagementAccountActionOperation updateAccountCommandOperation = new UpdateAccountOperation(app);
+
+		AccountModelHolderStrategy accountFactory = new UpdateAccountModelHolderStrategy();
+		accountFactory.setAccountModelHolderBuilder(null);
+		
+//		accountFactory.buildOldAccountModelHolder(user)
+		
+		return updateAccountCommandOperation;
+	}
+
 	// TODO: add familyValidation for update
-	private static ActionAccountOperation buildAddAccountActionOperation(ActionPhaseParameters app) {
+	private static ActionAccountOperation buildAddAccountActionOperation(final ActionPhaseParameters app) {
 		ManagementAccountActionOperation addAccountCommandOperation = new AddAccountOperation(app);
 
-		AccountModelHolderDirectory accountModelFactory = AccountOperationBuilder.createAddAccountBuilder(app.getRequest());
-		AccountModelHolder newAccountModel = accountModelFactory.buildNewAccountModelHolder(app.getRequest());
+		AccountModelHolderStrategy accountModelFactory = AccountOperationBuilder.createAddAccountBuilder(app.getRequest());
+		AccountModelHolder newAccountModel = accountModelFactory.buildNewAccountModelHolder();
+
 		addAccountCommandOperation.setNewAccountModelHolder(newAccountModel);
-
-		DetailsModel detailsModel = newAccountModel.getDetailsModel();
-		FreeDaysModel freeDaysModel = newAccountModel.getFreeDaysModel();
-
-		addAccountCommandOperation.addValidationRule(new ScreenNameValidator(detailsModel.getScreenName()));
-		addAccountCommandOperation.addValidationRule(new EmailAddressValidator(detailsModel.getEmailAddress()));
-		addAccountCommandOperation.addValidationRule(new LastNameValidator(detailsModel.getLastName()));
-		addAccountCommandOperation.addValidationRule(new FirstNameValidator(detailsModel.getFirstName()));
-		addAccountCommandOperation.addValidationRule(new LicensePlateValidator(detailsModel.getLicensePlate()));
-		addAccountCommandOperation.addValidationRule(new PhoneNumberValidator(detailsModel.getPhoneNumber()));
-		addAccountCommandOperation.addValidationRule(new BirthdayValidator(freeDaysModel.getStartDate(), detailsModel.getBirthdayDate()));
-		addAccountCommandOperation.addValidationRule(new CNPContentValidator(detailsModel.getCNP()));
-		addAccountCommandOperation.addValidationRule(new CNPDuplicateValidator(detailsModel.getCNP()));
-		addAccountCommandOperation.addValidationRule(new FunctieCIMValidator(detailsModel.getFunctieCIM()));
-		addAccountCommandOperation.addValidationRule(new DateHiredValidator(freeDaysModel.getStartDate()));
-		addAccountCommandOperation.addValidationRule(new JobTitleValidator(detailsModel.getJobTitle()));
-		addAccountCommandOperation.addValidationRule(new SiteValidator(newAccountModel.getUserDepartments()));
+		addAccountCommandOperation.addValidationRules(AccountOperationBuilder.getAddAccountValidators(newAccountModel));
 
 		return addAccountCommandOperation;
 	}
 
-	private static AccountModelHolderDirectory createAddAccountBuilder(ActionRequest request) {
-		AccountModelHolderDirectory accountFactory = new AccountModelHolderDirectory();
+	private static List<Validator> getAddAccountValidators(final AccountModelHolder newAccountModel) {
+		List<Validator> validators = new ArrayList<Validator>();
+
+		DetailsModel detailsModel = newAccountModel.getDetailsModel();
+		FreeDaysModel freeDaysModel = newAccountModel.getFreeDaysModel();
+
+		validators.add(new ScreenNameValidator(detailsModel.getScreenName()));
+		validators.add(new EmailAddressValidator(detailsModel.getEmailAddress()));
+		validators.add(new LastNameValidator(detailsModel.getLastName()));
+		validators.add(new FirstNameValidator(detailsModel.getFirstName()));
+		validators.add(new LicensePlateValidator(detailsModel.getLicensePlate()));
+		validators.add(new PhoneNumberValidator(detailsModel.getPhoneNumber()));
+		validators.add(new BirthdayValidator(freeDaysModel.getStartDate(), detailsModel.getBirthdayDate()));
+		validators.add(new CNPContentValidator(detailsModel.getCNP()));
+		validators.add(new CNPDuplicateValidator(detailsModel.getCNP()));
+		validators.add(new FunctieCIMValidator(detailsModel.getFunctieCIM()));
+		validators.add(new DateHiredValidator(freeDaysModel.getStartDate()));
+		validators.add(new JobTitleValidator(detailsModel.getJobTitle()));
+		validators.add(new SiteValidator(newAccountModel.getUserDepartments()));
+
+		return validators;
+	}
+
+	private static AccountModelHolderStrategy createAddAccountBuilder(ActionRequest request) {
+		AccountModelHolderStrategy accountFactory = new AddAccountModelHolderStrategy();
 
 		String userType = ParamUtil.getString(request, AccountOperationBuilder.USER_TYPE);
 		if (AccountOperationBuilder.INTERNSHIP_USER_TYPE.equals(userType)) {

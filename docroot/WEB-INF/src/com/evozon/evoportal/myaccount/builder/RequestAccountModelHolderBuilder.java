@@ -21,7 +21,7 @@ import com.liferay.portal.model.Group;
 import com.liferay.portal.service.GroupLocalServiceUtil;
 
 // TODO: remove hardcoded string in constants
-public abstract class RequestAccountModelHolderBuilder implements AccountModelHolderBuilder {
+public class RequestAccountModelHolderBuilder implements AccountModelHolderBuilder {
 
 	private static Log logger = LogFactoryUtil.getLog(RequestAccountModelHolderBuilder.class);
 
@@ -36,11 +36,7 @@ public abstract class RequestAccountModelHolderBuilder implements AccountModelHo
 		this.accountModelHolder = new AccountModelHolder();
 	}
 
-	public AccountModelHolder build() {
-		return accountModelHolder;
-	}
-
-	protected FreeDaysModel buildFreeDaysModelInternal() {
+	public AccountModelHolderBuilder buildFreeDaysModel() {
 		FreeDaysModel freeDaysModel = new FreeDaysModel();
 
 		freeDaysModel.setUserType(ParamUtil.getString(request, "user_type"));
@@ -50,10 +46,12 @@ public abstract class RequestAccountModelHolderBuilder implements AccountModelHo
 		freeDaysModel.setExtraDaysDescription(ParamUtil.getString(request, "extraDaysDescription", StringPool.BLANK));
 
 		addFreeDaysToFreeDaysModel(freeDaysModel);
-		return freeDaysModel;
+
+		accountModelHolder.setFreeDaysModel(freeDaysModel);
+		return this;
 	}
 
-	protected DetailsModel buildDetailsModelInternal() {
+	public AccountModelHolderBuilder buildDetailsModel() {
 		DetailsModel detailsModel = new DetailsModel();
 
 		detailsModel.setScreenName(ParamUtil.get(request, "screenName", StringPool.BLANK));
@@ -78,7 +76,21 @@ public abstract class RequestAccountModelHolderBuilder implements AccountModelHo
 		detailsModel.setDiplomaTitle(ParamUtil.get(request, "ExpandoAttribute--Diploma title (In progress)--", StringPool.BLANK));
 		detailsModel.setAdditionalEmailAddress(ParamUtil.get(request, "additionalEmailAddress", StringPool.BLANK));
 
-		return detailsModel;
+		this.accountModelHolder.setDetailsModel(detailsModel);
+		return this;
+	}
+
+	public AccountModelHolderBuilder buildUserDepartments() {
+		this.accountModelHolder.setUserDepartments(getUserDepartmentsFromRequest());
+		return this;
+	}
+
+	public AccountModelHolderBuilder buildAddresses() {
+		return this;
+	}
+
+	public AccountModelHolderBuilder buildUserFamily() {
+		return this;
 	}
 
 	protected List<String> getUserDepartmentsFromRequest() {
@@ -161,5 +173,21 @@ public abstract class RequestAccountModelHolderBuilder implements AccountModelHo
 		}
 
 		return dateObject;
+	}
+
+	protected Date getCIMStartDate() {
+		return getDateFromRequest("hired");
+	}
+
+	protected Date getInternshipStartDate() {
+		return getDateFromRequest("hired");
+	}
+
+	protected Date getStartDate() {
+		return getDateFromRequest("hired");
+	}
+
+	public AccountModelHolder build() {
+		return accountModelHolder;
 	}
 }

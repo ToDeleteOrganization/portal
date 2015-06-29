@@ -1,50 +1,24 @@
 package com.evozon.evoportal.myaccount.builder;
 
-import java.util.Date;
-
 import javax.portlet.PortletRequest;
 
-import com.evozon.evoportal.my_account.model.FreeDaysModel;
+import com.evozon.evoportal.my_account.AccountModelHolder;
 
+public class CreateAccountModelHolderBuilder extends AccountModelHolderStrategy {
 
-public abstract class CreateAccountModelHolderBuilder extends RequestAccountModelHolderBuilder {
+	private final RequestAccountModelHolderBuilder fromRequestBuilder;
 
 	public CreateAccountModelHolderBuilder(PortletRequest request) {
-		super(request);
+		fromRequestBuilder = new RequestAccountModelHolderBuilder(request);
 	}
 
-	public CreateAccountModelHolderBuilder buildFreeDaysModel() {
-		FreeDaysModel freeDaysModel = super.buildFreeDaysModelInternal();
-		freeDaysModel.setCimStartDate(getCIMStartDate());
-		freeDaysModel.setStartDate(getStartDate());
-		freeDaysModel.setInternshipStartDate(getInternshipStartDate());
-		accountModelHolder.setFreeDaysModel(freeDaysModel);
-		return this;
+	public AccountModelHolder buildNewAccountModelHolder() {
+		return fromRequestBuilder.buildUserDepartments().buildDetailsModel().buildFreeDaysModel().build();
 	}
 
-	public CreateAccountModelHolderBuilder buildDetailsModel() {
-		accountModelHolder.setDetailsModel(super.buildDetailsModelInternal());
-		return this;
+	public AccountModelHolder buildOldAccountModelHolder() {
+		// this doesn't apply for this kind
+		return null;
 	}
 
-	public CreateAccountModelHolderBuilder buildAddresses() {
-		return this;
-	}
-
-	public CreateAccountModelHolderBuilder buildUserFamily() {
-		return this;
-	}
-
-	public CreateAccountModelHolderBuilder buildUserDepartments() {
-		accountModelHolder.setUserDepartments(super.getUserDepartmentsFromRequest());
-		return this;
-	}
-
-	protected abstract Date getCIMStartDate();
-
-	protected abstract Date getInternshipStartDate();
-
-	protected Date getStartDate() {
-		return super.getDateFromRequest("hired");
-	}
 }

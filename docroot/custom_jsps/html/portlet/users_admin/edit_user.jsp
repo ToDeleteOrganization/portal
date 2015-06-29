@@ -15,6 +15,7 @@
 --%>
 
 <%@ include file="/html/portlet/users_admin/init.jsp" %>
+<%@ include file="../../util/hooks_util.jsp"%>
 <%@page import="com.liferay.portal.kernel.servlet.SessionErrors"%>
 
 <%
@@ -28,18 +29,11 @@ String redirect = ParamUtil.getString(request, "redirect");
 String backURL = ParamUtil.getString(request, "backURL", redirect);
 String historyKey = ParamUtil.getString(request, "historyKey");
 
+boolean hasContractDetailsErrors = SessionErrors.contains(renderRequest, "hasContractDetailsErrors");
+boolean hasPersonalDetailsErrors = SessionErrors.contains(renderRequest, "hasPersonalDetailsErrors");
+boolean hasFamilyErrors = SessionErrors.contains(renderRequest, "hasFamilyErrors");
+boolean hasSitesErrors = SessionErrors.contains(renderRequest, "hasSitesErrors");
 boolean hasFreeDaysErrors = SessionErrors.contains(renderRequest, "invalid-date-hired-error-key");
-boolean hasSitesErrors = false;
-Object hasSitesErrorsObj = request.getAttribute("hasSitesErrors");
-if  (hasSitesErrorsObj != null) {
-	hasSitesErrors = (Boolean)hasSitesErrorsObj;
-}
-
-boolean hasFamilyErrors = false;
-Object hastFamErrorsObj = request.getAttribute("hasFamilyErrors");
-if (hastFamErrorsObj != null) {
-	hasFamilyErrors = (Boolean)hastFamErrorsObj;
-}
 
 User selUser = PortalUtil.getSelectedUser(request);
 
@@ -310,10 +304,8 @@ if (selUser != null) {
 
 <aui:script>
 	AUI().ready('event', 'node', 'aui-loading-mask', 'aui-tabs', function(A) {
-		A.all("a[id$='Link']").on('click', function(event) {
-			MyAccountPageManager.setClickedLink(event.currentTarget.get('id'));
-		});
-		MyAccountPageManager.showProperAnchor(A);
+		MyAccountPageManager.showFirstErrorSection(A);
+		MyAccountPageManager.addSectionErrors(A);
 	});
 
 	function <portlet:namespace />createURL(href, value, onclick) {
@@ -348,135 +340,85 @@ if (selUser != null) {
 
 	var MyAccountPageManager = {
 
-		CATEGORIZATION: 'categorization',
-
-		lastClickedLink: 'categorization', // we consider by default
-
-		FAMILY: 'family',
-
-		// see 'ROOT\html\taglib\ui\asset_tags_selector\page.jsp'
-		assetTags: '',
-
-		// see 'ROOT\html\taglib\ui\asset_categories_selector\page.jsp'
-		assetCategories: '',
-	
-		setClickedLink: function(currentClicked) {
+		showFirstErrorSection: function(A) {
 			var my = this;
-			if (my.isCategorizationSectionLeave(currentClicked)) {
-				my.closeTopicPopups();
-				my.closeTagsPopups();
-			}
-		
-			my.lastClickedLink = currentClicked;
-		},
-	
-		closeTopicPopups: function() {
-			var my = this;
-
-			if (my.assetCategories) {
-				var assetCategoriesPopup = my.assetCategories._popup;
-				if (assetCategoriesPopup && assetCategoriesPopup.get('visible')) {
-					assetCategoriesPopup.close();
-				}
-			}
-		},
-	
-		closeTagsPopups: function() {
-			var my = this;
-
-			if (my.assetTags) {
-				var assetTagsPopup = my.assetTags._popup;
-				if (assetTagsPopup && assetTagsPopup.get('visible')) {
-					assetTagsPopup.close();
-				}
-			}
-		},
-	
-		isCategorizationSectionLeave: function(currentClicked) {
-			var my = this;
-		
-			var isLastClickedLinkCategorization = (my.lastClickedLink.indexOf(my.CATEGORIZATION) != -1);
-			var isCurrrentClickedLinkCatergorization = (currentClicked.indexOf(my.CATEGORIZATION) != -1);
-			
-			return isLastClickedLinkCategorization && !isCurrrentClickedLinkCatergorization;
-		},
-		
-		setTagSelector: function(assetTags) {
-			this.assetTags = assetTags;
-		},
-		
-		setCategoriesSelector: function(assetCategories) {
-			this.assetCategories = assetCategories;
-		},
-		
-		showProperAnchor: function(A) {
-			var my = this;
-
-			if (my.redirectToSitesAnchor(A)) {
+			if (<%= hasPersonalDetailsErrors %>) {
+				my.showSelection('details', A);
 				return;
 			}
 
-			if (my.redirectToFreeDaysAnchor(A)) {
+			if (<%= hasContractDetailsErrors %>) {
+				my.showSelection('contract_details', A);
 				return;
 			}
-			
-			if (my.redirectToFamilyAnchor(A)) {
+
+			if (<%= hasSitesErrors %>) {
+				my.showSelection('sites_and_roles', A);
 				return;
 			}
+
+			if (<%= hasFamilyErrors %>) {
+				my.showSelection('family', A);
+				return;
+			}
+
+			if (<%= hasFreeDaysErrors %>) {
+				my.showSelection('free_days_history', A);
+				return;
+			}
+
 		},
 
-		redirectToSitesAnchor: function(A) {
-			var hasSitesErrors = <%= hasSitesErrors %>;
-			if (hasSitesErrors) {
-				this.deselectCurrentSelectedAnchor(A);
-				
-				// add the selected class to the family section
-				A.one("div[id$='sites_and_roles']").replaceClass('aui-helper-hidden-accessible', 'selected');
-				A.one("a[id$='sites_and_rolesLink']").get('parentNode').addClass('selected');
-				
-				location.href = '#_LFR_FN__125_sites_and_roles';
+		addSectionErrors: function(A) {
+			var my = this;
+			if (<%= hasPersonalDetailsErrors %>) {
+				my.addAnchorError('details', A);
 			}
-			
+
+			if (<%= hasContractDetailsErrors %>) {
+				my.addAnchorError('contract_details', A);
+			}
+
+			if (<%= hasSitesErrors %>) {
+				my.addAnchorError('sites_and_roles', A);
+			}
+
+			if (<%= hasFamilyErrors %>) {
+				my.addAnchorError('family', A);
+			}
+
+			if (<%= hasFreeDaysErrors %>) {
+				my.addAnchorError('free_days_history', A);
+			}
 		},
 
-		redirectToFreeDaysAnchor: function(A) {
-			var hasFreeDaysErrors = <%= hasFreeDaysErrors %>;
-			if (hasFreeDaysErrors) {
-				this.deselectCurrentSelectedAnchor(A);
-				
-				// add the selected class to the family section
-				A.one("div[id$='free_days']").replaceClass('aui-helper-hidden-accessible', 'selected');
-				A.one("a[id$='free_daysLink']").get('parentNode').addClass('selected');
-				
-				location.href = '#_LFR_FN__125_free_days';
-			}
-			
-		},
-		
-		redirectToFamilyAnchor: function(A) {
-			var formerHistoryKey = '<%= historyKey %>';
-			var hasFamilyErrors = <%= hasFamilyErrors %>;
-			
-			if (hasFamilyErrors || (formerHistoryKey.indexOf(this.FAMILY) != -1)) {
-				// remove the 'selected' class from the currect selected element 
-				this.deselectCurrentSelectedAnchor(A);
+		addAnchorError: function(anchorName, A) {
+			var anchor = A.one("a[id$=" + anchorName + "Link]");
 
-				// add the selected class to the family section
-				A.one("div[id$='family']").replaceClass('aui-helper-hidden-accessible', 'selected');
-				A.one("a[id$='familyLink']").get('parentNode').addClass('selected');
-				
-				location.href = '#_LFR_FN__125_family';
+			if (anchor) {
+				var ali = anchor.ancestor("li");
+				ali.addClass("section-error");
 			}
 		},
-		
+
+		showSelection: function(sectionName, A) {
+			this.deselectCurrentSelectedAnchor(A);
+
+			// add the selected class to the family section
+			A.one("div[id$=" + sectionName + "]").replaceClass('aui-helper-hidden-accessible', 'selected');
+			A.one("a[id$=" + sectionName + "Link]").get('parentNode').addClass('selected');
+
+			location.href = '#_LFR_FN__125_' + sectionName;
+		},
+
 		deselectCurrentSelectedAnchor: function(A) {
 			var currentSelected = A.one("div.form-section.selected");
-			if (currentSelected != null) {
+			if (currentSelected) {
 				currentSelected.replaceClass('selected', 'aui-helper-hidden-accessible');
 			}
 				
 			var selectedLink = A.one("li.selected");
-			if (selectedLink != null) {
+			if (selectedLink) {
 				selectedLink.removeClass('selected');
 				selectedLink.removeClass('section-error');
 			}

@@ -12,6 +12,8 @@ import com.evozon.evoportal.evozonfreedaysallocator.service.BenefitDayLocalServi
 import com.evozon.evoportal.evozonfreedaysallocator.service.FreeDaysHistoryEntryLocalServiceUtil;
 import com.evozon.evoportal.my_account.model.DetailsModel;
 import com.evozon.evoportal.my_account.model.FreeDaysModel;
+import com.evozon.evoportal.my_account.pmreports.integration.AddUserPMReportsIntegration;
+import com.evozon.evoportal.my_account.pmreports.integration.PMReportsIntegration;
 import com.evozon.evoportal.my_account.util.MyAccountConstants;
 import com.evozon.evoportal.my_account.wrapper.UserExpandoWrapper;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -37,14 +39,21 @@ public class AddAccountOperation extends ManagementAccountActionOperation {
 
 	protected void executeInternalAction() {
 		try {
-			// TODO: change 'changedUser'
-			changedUser = getAddedUser();
+			// if the pm reports 
 			executePMReportsIntegration();
 			executeExpandoPropertiesUpdate();
 			executePhoneNumbersUpdate();
 		} catch (Exception e) {
 			logger.error("Error updating created user.");
 		}
+	}
+
+	private void executePMReportsIntegration() throws PortalException, SystemException {
+		long companyId = getCompanyId();
+		User user = getUser();
+		
+		PMReportsIntegration addPMUser = new AddUserPMReportsIntegration(newAccountModelHolder, companyId, user);
+		super.executePMReportsIntegration(addPMUser);
 	}
 
 	protected void updateUserAdditionalEmailAddress(User user) {
@@ -67,6 +76,8 @@ public class AddAccountOperation extends ManagementAccountActionOperation {
 
 	protected void executePhoneNumbersUpdate() {
 		try {
+			User changedUser = getUser();
+
 			DetailsModel detailsModel = newAccountModelHolder.getDetailsModel();
 			String newPhoneNumber = detailsModel.getPhoneNumber();
 
@@ -85,34 +96,42 @@ public class AddAccountOperation extends ManagementAccountActionOperation {
 	}
 
 	private void executeExpandoPropertiesUpdate() {
-		UserExpandoWrapper userExpando = new UserExpandoWrapper(changedUser);
+		User changedUser;
+		try {
+			changedUser = getUser();
+			UserExpandoWrapper userExpando = new UserExpandoWrapper(changedUser);
 
-		FreeDaysModel freeDaysModel = newAccountModelHolder.getFreeDaysModel();
-		DetailsModel detailsModel = newAccountModelHolder.getDetailsModel();
+			FreeDaysModel freeDaysModel = newAccountModelHolder.getFreeDaysModel();
+			DetailsModel detailsModel = newAccountModelHolder.getDetailsModel();
 
-		userExpando.setDateHired(freeDaysModel.getStartDate());
-		userExpando.setCIMStartDate(freeDaysModel.getCimStartDate());
-		userExpando.setInternshipStartDate(freeDaysModel.getInternshipStartDate());
+			userExpando.setDateHired(freeDaysModel.getStartDate());
+			userExpando.setCIMStartDate(freeDaysModel.getCimStartDate());
+			userExpando.setInternshipStartDate(freeDaysModel.getInternshipStartDate());
 
-		int newUserFreeDays = BonusDaysComputer.getUserLegalFreeDays(changedUser);
-		userExpando.setFreeDaysInCurrentYear(newUserFreeDays);
-		userExpando.setLegalVacationDays(newUserFreeDays);
+			int newUserFreeDays = BonusDaysComputer.getUserLegalFreeDays(changedUser);
+			userExpando.setFreeDaysInCurrentYear(newUserFreeDays);
+			userExpando.setLegalVacationDays(newUserFreeDays);
 
-		executeExtraDaysRecord(userExpando);
+			executeExtraDaysRecord(userExpando);
 
-		userExpando.setComments(freeDaysModel.getComments());
+			userExpando.setComments(freeDaysModel.getComments());
 
-		userExpando.setBuilding(detailsModel.getBuilding());
-		userExpando.setPersonalIdentificationNumber(detailsModel.getCNP());
+			userExpando.setBuilding(detailsModel.getBuilding());
+			userExpando.setPersonalIdentificationNumber(detailsModel.getCNP());
 
-		userExpando.setUserTypeCreation(newAccountModelHolder.getUserType());
+			userExpando.setUserTypeCreation(newAccountModelHolder.getUserType());
 
-		// updating official name
-		String officialName = detailsModel.getOfficialName().isEmpty() ? detailsModel.getLastName() : detailsModel.getOfficialName();
-		userExpando.setOfficialName(officialName);
+			// updating official name
+			String officialName = detailsModel.getOfficialName().isEmpty() ? detailsModel.getLastName() : detailsModel.getOfficialName();
+			userExpando.setOfficialName(officialName);
 
-		// update 'hide' phone number
-		userExpando.setPhoneNumberHidden(detailsModel.isPhoneNumberHidden());
+			// update 'hide' phone number
+			userExpando.setPhoneNumberHidden(detailsModel.isPhoneNumberHidden());
+		} catch (PortalException e) {
+			logger.error(e);
+		} catch (SystemException e) {
+			logger.error(e);
+		}
 	}
 
 	private void executeExtraDaysRecord(UserExpandoWrapper userExpando) {
@@ -132,7 +151,7 @@ public class AddAccountOperation extends ManagementAccountActionOperation {
 
 	}
 
-	private User getAddedUser() throws PortalException, SystemException {
+	public User getUser() throws PortalException, SystemException {
 		ActionRequest actionRequest = super.getActionRequest();
 		String emailAddress = actionRequest.getParameter(MyAccountConstants.EMAIL_ADDRESS);
 		return UserLocalServiceUtil.getUserByEmailAddress(getCompanyId(), emailAddress);
