@@ -12,7 +12,12 @@ public abstract class AccountModelHolderStrategy {
 
 	public abstract AccountModelHolder buildOldAccountModelHolder();
 
-	public void setAccountModelHolderBuilder(AccountModelHolderBuilder builder) {
-		this.requestAccountBuilder = builder;
+	public void setNewAccountModelHolderBuilder(AccountModelHolderBuilder newBuilder) {
+		this.requestAccountBuilder = newBuilder;
 	}
+
+	public void setOldAccountModelHolderBuilder(AccountModelHolderBuilder oldBuilder) {
+		this.userAccountBuilder = oldBuilder;
+	}
+
 }

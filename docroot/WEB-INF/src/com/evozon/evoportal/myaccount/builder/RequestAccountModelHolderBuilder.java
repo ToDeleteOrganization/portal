@@ -44,9 +44,10 @@ public class RequestAccountModelHolderBuilder implements AccountModelHolderBuild
 		freeDaysModel.setComments(ParamUtil.getString(request, "comments", StringPool.BLANK));
 		freeDaysModel.setExtraDaysCount(ParamUtil.getInteger(request, "extraDays", 0));
 		freeDaysModel.setExtraDaysDescription(ParamUtil.getString(request, "extraDaysDescription", StringPool.BLANK));
-
+		freeDaysModel.setStartDate(getStartDate());
+		freeDaysModel.setCimStartDate(getStartDate());
+		freeDaysModel.setInternshipStartDate(getStartDate());
 		addFreeDaysToFreeDaysModel(freeDaysModel);
-
 		accountModelHolder.setFreeDaysModel(freeDaysModel);
 		return this;
 	}

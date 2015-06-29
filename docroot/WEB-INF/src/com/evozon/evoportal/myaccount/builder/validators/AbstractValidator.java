@@ -2,6 +2,9 @@ package com.evozon.evoportal.myaccount.builder.validators;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.ResourceBundle;
+
+import javax.portlet.PortletRequest;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -10,6 +13,8 @@ import com.evozon.evoportal.myaccount.builder.Validator;
 
 // Add toString method to all subclasses
 public abstract class AbstractValidator implements Validator {
+
+	private static final String PROPERTIES_FILE = "content/Language_en";
 
 	protected static final String CONTRACT_DETAILS_ERROR = "hasContractDetailsErrors";
 
@@ -60,6 +65,14 @@ public abstract class AbstractValidator implements Validator {
 
 	protected AccountValidationMessage buildValidationMessage(String msgKey, Object msgObj) {
 		return new AccountValidationMessage(msgKey, msgObj, getCategory());
+	}
+
+	protected String getBundleMessage(PortletRequest request, String key) {
+		return getResourceBundle(request).getString(key);
+	}
+
+	private ResourceBundle getResourceBundle(PortletRequest request) {
+		return ResourceBundle.getBundle(PROPERTIES_FILE, request.getLocale());
 	}
 
 	protected abstract String getCategory();

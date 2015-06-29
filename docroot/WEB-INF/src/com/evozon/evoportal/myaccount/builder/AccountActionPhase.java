@@ -16,22 +16,22 @@ public class AccountActionPhase implements AccountPhase<ActionPhaseParameters> {
 	private static Log logger = LogFactoryUtil.getLog(AccountActionPhase.class);
 
 	public void executePhase(ActionPhaseParameters pp) {
-		final ActionAccountOperation actionOperation = AccountOperationBuilder.buildAccountActionOperation(pp);
-		final ValidationResult validationResult = actionOperation.isActionValid();
+		try {
+			final ActionAccountOperation actionOperation = AccountOperationBuilder.buildAccountActionOperation(pp);
+			final ValidationResult validationResult = actionOperation.isActionValid();
 
-		if (validationResult.hasMessages()) {
-			addMessagesToSession(validationResult.getValidationMessages(), pp.getRequest());
-		}
-
-		if (validationResult.hasErrors()) {
-			addErrorsToSession(validationResult.getValidationErrors(), pp.getRequest());
-
-		} else {
-			try {
-				actionOperation.execute();
-			} catch (Exception e) {
-				logger.error(e);
+			if (validationResult.hasMessages()) {
+				addMessagesToSession(validationResult.getValidationMessages(), pp.getRequest());
 			}
+
+			if (validationResult.hasErrors()) {
+				addErrorsToSession(validationResult.getValidationErrors(), pp.getRequest());
+
+			} else {
+				actionOperation.execute();
+			}
+		} catch (Exception e) {
+			logger.error(e);
 		}
 
 	}

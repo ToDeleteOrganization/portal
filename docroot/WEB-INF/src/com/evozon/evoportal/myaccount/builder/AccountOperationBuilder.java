@@ -22,6 +22,7 @@ import com.evozon.evoportal.myaccount.builder.validators.BirthdayValidator;
 import com.evozon.evoportal.myaccount.builder.validators.CNPContentValidator;
 import com.evozon.evoportal.myaccount.builder.validators.CNPDuplicateValidator;
 import com.evozon.evoportal.myaccount.builder.validators.DateHiredValidator;
+import com.evozon.evoportal.myaccount.builder.validators.DeleteAccountPermissionValidator;
 import com.evozon.evoportal.myaccount.builder.validators.EmailAddressValidator;
 import com.evozon.evoportal.myaccount.builder.validators.FirstNameValidator;
 import com.evozon.evoportal.myaccount.builder.validators.FunctieCIMValidator;
@@ -31,42 +32,86 @@ import com.evozon.evoportal.myaccount.builder.validators.LicensePlateValidator;
 import com.evozon.evoportal.myaccount.builder.validators.PhoneNumberValidator;
 import com.evozon.evoportal.myaccount.builder.validators.ScreenNameValidator;
 import com.evozon.evoportal.myaccount.builder.validators.SiteValidator;
+import com.evozon.evoportal.myaccount.builder.validators.UserProjectValidator;
+import com.liferay.compat.portal.util.PortalUtil;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.struts.StrutsPortletAction;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.model.User;
 
 public final class AccountOperationBuilder {
+
+	public static final String DEFAULT = "DEFAULT";
 
 	private static final String INTERNSHIP_USER_TYPE = "internship";
 
 	private static final String SCHOLARSHIP_USER_TYPE = "scholarship";
 
-	private static final String DEFAULT = "DEFAULT";
-
 	private static final String USER_TYPE = "user_type";
 
-	public static ActionAccountOperation buildAccountActionOperation(ActionPhaseParameters app) {
+	public static ActionAccountOperation buildAccountActionOperation(ActionPhaseParameters app) throws PortalException, SystemException {
 		ActionAccountOperation operation = null;
 
 		String command = ParamUtil.getString(app.getRequest(), Constants.CMD, AccountOperationBuilder.DEFAULT);
 		if (Constants.ADD.equals(command)) {
 			operation = AccountOperationBuilder.buildAddAccountActionOperation(app);
 
-		} if (Constants.UPDATE.equals(command)) {
+		} else if (Constants.UPDATE.equals(command)) {
 			operation = AccountOperationBuilder.buildUpdateAccountActionOperation(app);
+
+		} else if (Constants.DEACTIVATE.equals(command) || MyAccountConstants.CANCEL_DEACTIVATION.equals(command)) {
+			operation = AccountOperationBuilder.buildDeactivateAccountOperation(app);
+
+		} else if (Constants.RESTORE.equals(command) || MyAccountConstants.CANCEL_ACTIVATION.equals(command)) {
+			operation = AccountOperationBuilder.buildActivateAccountOperation(app);
+
+		} else if (Constants.DELETE.equals(command)) {
+			operation = AccountOperationBuilder.buildDeleteAccountActionOperation(app);
+
+		} else {
+			operation = new DefaultAccountActionOperation(app);
+
 		}
 
 		return operation;
 	}
 
-	private static ActionAccountOperation buildUpdateAccountActionOperation(final ActionPhaseParameters app) {
+	private static ActionAccountOperation buildActivateAccountOperation(ActionPhaseParameters app) {
+		ManagementAccountActionOperation restoreAccountCommandOperation = new ActivateAccountOperation(app);
+		return restoreAccountCommandOperation;
+	}
+
+	private static ActionAccountOperation buildDeactivateAccountOperation(ActionPhaseParameters app) throws PortalException, SystemException {
+		ManagementAccountActionOperation deactivateAccountCommandOperation = new DeactivateAccountOperation(app);		
+		deactivateAccountCommandOperation.addValidationRule(new UserProjectValidator(app.getRequest()));
+		return deactivateAccountCommandOperation;
+	}
+
+	private static ActionAccountOperation buildDeleteAccountActionOperation(ActionPhaseParameters app) throws PortalException, SystemException {
+		ManagementAccountActionOperation deleteAccountCommandOperation = new DeleteAccountOperation(app);
+		User currentUser = PortalUtil.getUser(app.getRequest());
+		deleteAccountCommandOperation.addValidationRule(new DeleteAccountPermissionValidator(currentUser));
+		return deleteAccountCommandOperation;
+	}
+
+	private static ActionAccountOperation buildUpdateAccountActionOperation(final ActionPhaseParameters app) throws PortalException, SystemException {
 		ManagementAccountActionOperation updateAccountCommandOperation = new UpdateAccountOperation(app);
 
+		User selectedUser = PortalUtil.getSelectedUser(app.getRequest());
+
 		AccountModelHolderStrategy accountFactory = new UpdateAccountModelHolderStrategy();
-		accountFactory.setAccountModelHolderBuilder(null);
-		
-//		accountFactory.buildOldAccountModelHolder(user)
-		
+		accountFactory.setNewAccountModelHolderBuilder(new RequestAccountModelHolderBuilder(app.getRequest()));
+		accountFactory.setOldAccountModelHolderBuilder(new UserAccountModelHolderBuilder(selectedUser));
+
+		AccountModelHolder newAccountHolder = accountFactory.buildNewAccountModelHolder();
+		updateAccountCommandOperation.setOldAccountModelHolder(accountFactory.buildOldAccountModelHolder());
+		updateAccountCommandOperation.setNewAccountModelHolder(newAccountHolder);
+
+		// TODO: customize validators for update operation
+		updateAccountCommandOperation.addValidationRules(AccountOperationBuilder.getAddAccountValidators(newAccountHolder));
+
 		return updateAccountCommandOperation;
 	}
 
@@ -111,19 +156,20 @@ public final class AccountOperationBuilder {
 
 		String userType = ParamUtil.getString(request, AccountOperationBuilder.USER_TYPE);
 		if (AccountOperationBuilder.INTERNSHIP_USER_TYPE.equals(userType)) {
-			accountFactory.setAccountModelHolderBuilder(new CreateInternshipAccountModelHolderBuilder(request));
+			accountFactory.setNewAccountModelHolderBuilder(new CreateInternshipAccountModelHolderBuilder(request));
 
 		} else if (AccountOperationBuilder.SCHOLARSHIP_USER_TYPE.equals(userType)) {
-			accountFactory.setAccountModelHolderBuilder(new CreateScholarshipAccountModelHolderBuilder(request));
+			accountFactory.setNewAccountModelHolderBuilder(new CreateScholarshipAccountModelHolderBuilder(request));
 
 		} else {
-			accountFactory.setAccountModelHolderBuilder(new CreateCIMAccountModelHolderBuilder(request));
+			accountFactory.setNewAccountModelHolderBuilder(new CreateCIMAccountModelHolderBuilder(request));
 		}
 
 		return accountFactory;
 	}
 
-	private AccountActionCommand createCommand(StrutsPortletAction originalStrutsPortletAction, PortletConfig portletConfig, ActionRequest actionRequest, ActionResponse actionResponse) {
+	private AccountActionCommand createCommand(StrutsPortletAction originalStrutsPortletAction, PortletConfig portletConfig, ActionRequest actionRequest,
+			ActionResponse actionResponse) {
 		String command = ParamUtil.getString(actionRequest, Constants.CMD);
 
 		AccountActionCommand accountCommand = null;
