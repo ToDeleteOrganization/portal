@@ -56,7 +56,6 @@ public abstract class AbstractAccountActionOperation implements ActionAccountOpe
 					logger.debug("Validation failure [" + validator + "].");
 				}
 			}
-
 		}
 
 		return validationResult;

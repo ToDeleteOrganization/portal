@@ -11,6 +11,11 @@ public class DeleteAccountOperation extends ManagementAccountActionOperation {
 		super(app);
 	}
 
+	public void execute() throws Exception {
+		// for deletion just execute the internal action
+		executeInternalAction();
+	}
+
 	protected void executeInternalAction() {
 		try {
 			executeDefaultLiferayProcess();

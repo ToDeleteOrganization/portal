@@ -1,35 +1,27 @@
 package com.evozon.evoportal.myaccount.builder.validators;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.PortletRequest;
 
 import com.evozon.evoportal.evozonprojects.model.ProjectGroup;
 import com.evozon.evoportal.evozonprojects.service.ProjectGroupLocalServiceUtil;
-import com.evozon.evoportal.my_account.CustomActionRequest;
-import com.evozon.evoportal.my_account.command.DefaultCommand;
-import com.evozon.evoportal.my_account.util.MyAccountConstants;
 import com.evozon.evoportal.myaccount.builder.ActionValidationResult;
+import com.evozon.evoportal.myaccount.builder.StatusChangeModel;
+import com.evozon.evoportal.myaccount.builder.UserStatusChangeBuilder;
 import com.evozon.evoportal.myaccount.builder.ValidationResult;
-import com.evozon.evoportal.myaccount.builder.Validator;
 import com.liferay.portal.UserActiveException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.Constants;
-import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.StringPool;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.model.User;
-import com.liferay.portal.service.UserLocalServiceUtil;
 import com.liferay.portal.util.PortalUtil;
-import com.sun.corba.se.impl.orbutil.closure.Constant;
 
 public class UserProjectValidator extends AbstractValidator {
 
@@ -82,21 +74,10 @@ public class UserProjectValidator extends AbstractValidator {
 		return res;
 	}
 
-	private List<User> getSelectedUsers() {
-		String idsStr = ParamUtil.getString(request, MyAccountConstants.DELETED_IDS);
-		long[] usersId = StringUtil.split(idsStr, 0L);
-
-		List<User> selectedUsers = new ArrayList<User>();
-		for (long userId : usersId) {
-			try {
-				User user = UserLocalServiceUtil.getUser(userId);
-				selectedUsers.add(user);
-			} catch (Exception e) {
-				logger.error(e);
-			}
-		}
-
-		return selectedUsers;
+	private Set<User> getSelectedUsers() {
+		UserStatusChangeBuilder uscb = new UserStatusChangeBuilder(request);
+		StatusChangeModel scm = uscb.build();
+		return scm.getSelectedUsers();
 	}
 
 	protected String getCategory() {

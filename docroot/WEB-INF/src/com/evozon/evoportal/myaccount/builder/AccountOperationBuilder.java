@@ -4,17 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.portlet.ActionRequest;
-import javax.portlet.ActionResponse;
-import javax.portlet.PortletConfig;
 
 import com.evozon.evoportal.my_account.AccountModelHolder;
-import com.evozon.evoportal.my_account.command.AccountActionCommand;
-import com.evozon.evoportal.my_account.command.ActivateUsersCommand;
-import com.evozon.evoportal.my_account.command.AddAccountCommand;
-import com.evozon.evoportal.my_account.command.DeactivateUsersCommand;
-import com.evozon.evoportal.my_account.command.DefaultCommand;
-import com.evozon.evoportal.my_account.command.DeleteUserCommand;
-import com.evozon.evoportal.my_account.command.UpdateAccountCommand;
 import com.evozon.evoportal.my_account.model.DetailsModel;
 import com.evozon.evoportal.my_account.model.FreeDaysModel;
 import com.evozon.evoportal.my_account.util.MyAccountConstants;
@@ -36,7 +27,6 @@ import com.evozon.evoportal.myaccount.builder.validators.UserProjectValidator;
 import com.liferay.compat.portal.util.PortalUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.struts.StrutsPortletAction;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.model.User;
@@ -74,7 +64,6 @@ public final class AccountOperationBuilder {
 			operation = new DefaultAccountActionOperation(app);
 
 		}
-
 		return operation;
 	}
 
@@ -84,7 +73,7 @@ public final class AccountOperationBuilder {
 	}
 
 	private static ActionAccountOperation buildDeactivateAccountOperation(ActionPhaseParameters app) throws PortalException, SystemException {
-		ManagementAccountActionOperation deactivateAccountCommandOperation = new DeactivateAccountOperation(app);		
+		ManagementAccountActionOperation deactivateAccountCommandOperation = new DeactivateAccountOperation(app);
 		deactivateAccountCommandOperation.addValidationRule(new UserProjectValidator(app.getRequest()));
 		return deactivateAccountCommandOperation;
 	}
@@ -98,33 +87,22 @@ public final class AccountOperationBuilder {
 
 	private static ActionAccountOperation buildUpdateAccountActionOperation(final ActionPhaseParameters app) throws PortalException, SystemException {
 		ManagementAccountActionOperation updateAccountCommandOperation = new UpdateAccountOperation(app);
-
-		User selectedUser = PortalUtil.getSelectedUser(app.getRequest());
-
-		AccountModelHolderStrategy accountFactory = new UpdateAccountModelHolderStrategy();
-		accountFactory.setNewAccountModelHolderBuilder(new RequestAccountModelHolderBuilder(app.getRequest()));
-		accountFactory.setOldAccountModelHolderBuilder(new UserAccountModelHolderBuilder(selectedUser));
-
+		AccountModelHolderStrategy accountFactory = AccountOperationBuilder.createUpdateAccountBuilder(app.getRequest());
 		AccountModelHolder newAccountHolder = accountFactory.buildNewAccountModelHolder();
 		updateAccountCommandOperation.setOldAccountModelHolder(accountFactory.buildOldAccountModelHolder());
 		updateAccountCommandOperation.setNewAccountModelHolder(newAccountHolder);
-
 		// TODO: customize validators for update operation
 		updateAccountCommandOperation.addValidationRules(AccountOperationBuilder.getAddAccountValidators(newAccountHolder));
-
 		return updateAccountCommandOperation;
 	}
 
 	// TODO: add familyValidation for update
 	private static ActionAccountOperation buildAddAccountActionOperation(final ActionPhaseParameters app) {
 		ManagementAccountActionOperation addAccountCommandOperation = new AddAccountOperation(app);
-
 		AccountModelHolderStrategy accountModelFactory = AccountOperationBuilder.createAddAccountBuilder(app.getRequest());
 		AccountModelHolder newAccountModel = accountModelFactory.buildNewAccountModelHolder();
-
 		addAccountCommandOperation.setNewAccountModelHolder(newAccountModel);
 		addAccountCommandOperation.addValidationRules(AccountOperationBuilder.getAddAccountValidators(newAccountModel));
-
 		return addAccountCommandOperation;
 	}
 
@@ -151,6 +129,15 @@ public final class AccountOperationBuilder {
 		return validators;
 	}
 
+	private static AccountModelHolderStrategy createUpdateAccountBuilder(ActionRequest request) throws PortalException, SystemException {
+		User selectedUser = PortalUtil.getSelectedUser(request);
+		AccountModelHolderStrategy accountFactory = new UpdateAccountModelHolderStrategy();
+		accountFactory.setNewAccountModelHolderBuilder(new RequestAccountModelHolderBuilder(request));
+		accountFactory.setOldAccountModelHolderBuilder(new UserAccountModelHolderBuilder(selectedUser));
+
+		return accountFactory;
+	}
+
 	private static AccountModelHolderStrategy createAddAccountBuilder(ActionRequest request) {
 		AccountModelHolderStrategy accountFactory = new AddAccountModelHolderStrategy();
 
@@ -168,33 +155,4 @@ public final class AccountOperationBuilder {
 		return accountFactory;
 	}
 
-	private AccountActionCommand createCommand(StrutsPortletAction originalStrutsPortletAction, PortletConfig portletConfig, ActionRequest actionRequest,
-			ActionResponse actionResponse) {
-		String command = ParamUtil.getString(actionRequest, Constants.CMD);
-
-		AccountActionCommand accountCommand = null;
-		if (Constants.ADD.equals(command)) {
-			accountCommand = new AddAccountCommand(originalStrutsPortletAction, portletConfig, actionRequest, actionResponse);
-
-		} else if (Constants.UPDATE.equals(command)) {
-			accountCommand = new UpdateAccountCommand(originalStrutsPortletAction, portletConfig, actionRequest, actionResponse);
-
-		} else if (Constants.DEACTIVATE.equals(command) || MyAccountConstants.CANCEL_DEACTIVATION.equals(command)) {
-			boolean isCancelCommand = MyAccountConstants.CANCEL_DEACTIVATION.equals(command);
-			accountCommand = new DeactivateUsersCommand(originalStrutsPortletAction, portletConfig, actionRequest, actionResponse, isCancelCommand);
-
-		} else if (Constants.RESTORE.equals(command) || MyAccountConstants.CANCEL_ACTIVATION.equals(command)) {
-			boolean isCancelCommand = MyAccountConstants.CANCEL_ACTIVATION.equals(command);
-			accountCommand = new ActivateUsersCommand(originalStrutsPortletAction, portletConfig, actionRequest, actionResponse, isCancelCommand);
-
-		} else if (Constants.DELETE.equals(command)) {
-			accountCommand = new DeleteUserCommand(originalStrutsPortletAction, portletConfig, actionRequest, actionResponse);
-
-		} else {
-			accountCommand = new DefaultCommand(originalStrutsPortletAction, portletConfig, actionRequest, actionResponse);
-
-		}
-
-		return accountCommand;
-	}
 }

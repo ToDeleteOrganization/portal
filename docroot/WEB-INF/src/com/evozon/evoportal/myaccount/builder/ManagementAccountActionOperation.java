@@ -15,7 +15,7 @@ public abstract class ManagementAccountActionOperation extends AbstractAccountAc
 		return PortalUtil.getUser(getActionRequest());
 	}
 
-	public User getUser() throws PortalException, SystemException {
+	public User getSelectedUser() throws PortalException, SystemException {
 		return PortalUtil.getSelectedUser(getActionRequest());
 	}
 

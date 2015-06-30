@@ -31,7 +31,7 @@ import com.liferay.portal.service.UserLocalServiceUtil;
 
 public class AddAccountOperation extends ManagementAccountActionOperation {
 
-	private static Log logger = LogFactoryUtil.getLog(AddAccountOperation.class);
+	private static final Log logger = LogFactoryUtil.getLog(AddAccountOperation.class);
 
 	public AddAccountOperation(ActionPhaseParameters app) {
 		super(app);
@@ -39,7 +39,6 @@ public class AddAccountOperation extends ManagementAccountActionOperation {
 
 	protected void executeInternalAction() {
 		try {
-			// if the pm reports 
 			executePMReportsIntegration();
 			executeExpandoPropertiesUpdate();
 			executePhoneNumbersUpdate();
@@ -50,9 +49,9 @@ public class AddAccountOperation extends ManagementAccountActionOperation {
 
 	private void executePMReportsIntegration() throws PortalException, SystemException {
 		long companyId = getCompanyId();
-		User user = getUser();
+		User user = getSelectedUser();
 		
-		PMReportsIntegration addPMUser = new AddUserPMReportsIntegration(newAccountModelHolder, companyId, user);
+		PMReportsIntegration addPMUser = new AddUserPMReportsIntegration(companyId, newAccountModelHolder, user);
 		super.executePMReportsIntegration(addPMUser);
 	}
 
@@ -76,7 +75,7 @@ public class AddAccountOperation extends ManagementAccountActionOperation {
 
 	protected void executePhoneNumbersUpdate() {
 		try {
-			User changedUser = getUser();
+			User changedUser = getSelectedUser();
 
 			DetailsModel detailsModel = newAccountModelHolder.getDetailsModel();
 			String newPhoneNumber = detailsModel.getPhoneNumber();
@@ -98,7 +97,7 @@ public class AddAccountOperation extends ManagementAccountActionOperation {
 	private void executeExpandoPropertiesUpdate() {
 		User changedUser;
 		try {
-			changedUser = getUser();
+			changedUser = getSelectedUser();
 			UserExpandoWrapper userExpando = new UserExpandoWrapper(changedUser);
 
 			FreeDaysModel freeDaysModel = newAccountModelHolder.getFreeDaysModel();
@@ -151,7 +150,7 @@ public class AddAccountOperation extends ManagementAccountActionOperation {
 
 	}
 
-	public User getUser() throws PortalException, SystemException {
+	public User getSelectedUser() throws PortalException, SystemException {
 		ActionRequest actionRequest = super.getActionRequest();
 		String emailAddress = actionRequest.getParameter(MyAccountConstants.EMAIL_ADDRESS);
 		return UserLocalServiceUtil.getUserByEmailAddress(getCompanyId(), emailAddress);

@@ -2,7 +2,7 @@ package com.evozon.evoportal.myaccount.builder;
 
 import com.evozon.evoportal.my_account.AccountModelHolder;
 
-public interface AccountModelHolderBuilder {
+public interface AccountModelHolderBuilder extends MyAccountBuilder<AccountModelHolder>{
 
 	public AccountModelHolderBuilder buildFreeDaysModel();
 
@@ -14,5 +14,4 @@ public interface AccountModelHolderBuilder {
 
 	public AccountModelHolderBuilder buildUserDepartments();
 
-	public AccountModelHolder build();
 }

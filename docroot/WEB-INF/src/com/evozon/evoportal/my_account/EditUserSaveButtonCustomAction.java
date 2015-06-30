@@ -22,13 +22,6 @@ import com.evozon.evoportal.evozonfreedaysallocator.model.BenefitDay;
 import com.evozon.evoportal.evozonfreedaysallocator.model.FreeDaysHistoryEntry;
 import com.evozon.evoportal.evozonfreedaysallocator.service.BenefitDayLocalServiceUtil;
 import com.evozon.evoportal.evozonfreedaysallocator.service.FreeDaysHistoryEntryLocalServiceUtil;
-import com.evozon.evoportal.my_account.command.AccountActionCommand;
-import com.evozon.evoportal.my_account.command.ActivateUsersCommand;
-import com.evozon.evoportal.my_account.command.AddAccountCommand;
-import com.evozon.evoportal.my_account.command.DeactivateUsersCommand;
-import com.evozon.evoportal.my_account.command.DefaultCommand;
-import com.evozon.evoportal.my_account.command.DeleteUserCommand;
-import com.evozon.evoportal.my_account.command.UpdateAccountCommand;
 import com.evozon.evoportal.my_account.managers.UserEmploymentPeriodsHandler;
 import com.evozon.evoportal.my_account.util.EvoportalUserUtil;
 import com.evozon.evoportal.my_account.util.MyAccountConstants;
@@ -80,35 +73,6 @@ public class EditUserSaveButtonCustomAction extends AccountCustomStrutsPortletAc
 		AccountActionPhase accountPhase = AccountPhaseFactory.getActionAccountPhase();
 
 		accountPhase.executePhase(param);
-	}
-
-	private AccountActionCommand createCommand(StrutsPortletAction originalStrutsPortletAction, PortletConfig portletConfig, ActionRequest actionRequest, ActionResponse actionResponse) {
-		String command = ParamUtil.getString(actionRequest, Constants.CMD);
-
-		AccountActionCommand accountCommand = null;
-		if (Constants.ADD.equals(command)) {
-			accountCommand = new AddAccountCommand(originalStrutsPortletAction, portletConfig, actionRequest, actionResponse);
-
-		} else if (Constants.UPDATE.equals(command)) {
-			accountCommand = new UpdateAccountCommand(originalStrutsPortletAction, portletConfig, actionRequest, actionResponse);
-
-		} else if (Constants.DEACTIVATE.equals(command) || MyAccountConstants.CANCEL_DEACTIVATION.equals(command)) {
-			boolean isCancelCommand = MyAccountConstants.CANCEL_DEACTIVATION.equals(command);
-			accountCommand = new DeactivateUsersCommand(originalStrutsPortletAction, portletConfig, actionRequest, actionResponse, isCancelCommand);
-
-		} else if (Constants.RESTORE.equals(command) || MyAccountConstants.CANCEL_ACTIVATION.equals(command)) {
-			boolean isCancelCommand = MyAccountConstants.CANCEL_ACTIVATION.equals(command);
-			accountCommand = new ActivateUsersCommand(originalStrutsPortletAction, portletConfig, actionRequest, actionResponse, isCancelCommand);
-
-		} else if (Constants.DELETE.equals(command)) {
-			accountCommand = new DeleteUserCommand(originalStrutsPortletAction, portletConfig, actionRequest, actionResponse);
-
-		} else {
-			accountCommand = new DefaultCommand(originalStrutsPortletAction, portletConfig, actionRequest, actionResponse);
-
-		}
-
-		return accountCommand;
 	}
 
 	public String render(StrutsPortletAction originalStrutsPortletAction, PortletConfig portletConfig, RenderRequest renderRequest, RenderResponse renderResponse) throws Exception {

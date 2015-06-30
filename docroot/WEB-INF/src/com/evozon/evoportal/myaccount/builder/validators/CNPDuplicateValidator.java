@@ -8,11 +8,14 @@ import org.apache.commons.lang.StringUtils;
 import com.evozon.evoportal.my_account.util.MyAccountConstants;
 import com.evozon.evoportal.myaccount.builder.ActionValidationResult;
 import com.evozon.evoportal.myaccount.builder.ValidationResult;
+import com.liferay.portal.kernel.dao.orm.QueryPos;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.model.User;
+import com.liferay.portal.service.UserLocalServiceUtil;
 import com.liferay.portlet.expando.model.ExpandoColumn;
 import com.liferay.portlet.expando.model.ExpandoTable;
 import com.liferay.portlet.expando.model.ExpandoValue;
@@ -22,7 +25,7 @@ import com.liferay.portlet.expando.service.ExpandoValueLocalServiceUtil;
 
 public class CNPDuplicateValidator extends AbstractValidator {
 
-	private static Log logger = LogFactoryUtil.getLog(CNPDuplicateValidator.class);
+	private static final Log logger = LogFactoryUtil.getLog(CNPDuplicateValidator.class);
 
 	private static final String DUPLICATE_CNP_ERROR = "duplicate-cnp";
 
@@ -45,7 +48,7 @@ public class CNPDuplicateValidator extends AbstractValidator {
 		final ActionValidationResult res = new ActionValidationResult();
 
 		if (!StringUtils.equals(newCNP, oldCNP)) {
-			List<String> duplicateUsers = findUsersWithSameCNP(newCNP);
+			final List<String> duplicateUsers = findUsersWithSameCNP(newCNP);
 
 			if (!duplicateUsers.isEmpty()) {
 				res.addError(buildValidationMessage(DUPLICATE_CNP_ERROR, buildErrorMessage(duplicateUsers)));
@@ -65,15 +68,14 @@ public class CNPDuplicateValidator extends AbstractValidator {
 	}
 
 	private List<String> findUsersWithSameCNP(String cnp) {
-		List<String> usersNamesWithSameCNP = new ArrayList<String>();;
+		final List<String> usersNamesWithSameCNP = new ArrayList<String>();
+
 		try {
-			ExpandoTable userExpandoTable = ExpandoTableLocalServiceUtil.getDefaultTable(10154, User.class.getName());
-			ExpandoColumn filedColumn = ExpandoColumnLocalServiceUtil.getColumn(userExpandoTable.getTableId(), MyAccountConstants.PERSONAL_IDENTIFICATION_NUMBER);
-			
-			List<ExpandoValue> columnValues = ExpandoValueLocalServiceUtil.getColumnValues(filedColumn.getColumnId(), -1, -1);
+			final List<ExpandoValue> columnValues = getExpandoValues(10154, User.class.getName(), MyAccountConstants.PERSONAL_IDENTIFICATION_NUMBER);
 			for (ExpandoValue ev : columnValues) {
 				if (StringUtils.equals(ev.getData(), cnp)) {
-					usersNamesWithSameCNP.add(ev.getData());
+					String userFullName = findUserFullNameById(ev.getClassPK());
+					usersNamesWithSameCNP.add(userFullName);
 				}
 			}
 
@@ -81,9 +83,22 @@ public class CNPDuplicateValidator extends AbstractValidator {
 			logger.error(e);
 		} catch (SystemException e) {
 			logger.error(e);
+		} catch (Exception e) {
+			logger.error(e);
 		}
 
 		return usersNamesWithSameCNP;
+	}
+
+	private List<ExpandoValue> getExpandoValues(final long companyId, final String exntityClassName, final String entityName) throws PortalException, SystemException {
+		ExpandoTable userExpandoTable = ExpandoTableLocalServiceUtil.getDefaultTable(companyId, exntityClassName);
+		ExpandoColumn filedColumn = ExpandoColumnLocalServiceUtil.getColumn(userExpandoTable.getTableId(), entityName);
+
+		return ExpandoValueLocalServiceUtil.getColumnValues(filedColumn.getColumnId(), QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+	}
+
+	private String findUserFullNameById(long userId) throws PortalException, SystemException {
+		return UserLocalServiceUtil.getUser(userId).getFullName();
 	}
 
 	protected String getCategory() {
