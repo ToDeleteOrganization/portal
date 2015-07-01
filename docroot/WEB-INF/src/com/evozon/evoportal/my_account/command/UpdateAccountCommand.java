@@ -138,7 +138,7 @@ public class UpdateAccountCommand extends UserProfileAccountCommand {
 			totalFreeDays += newFreeDaysModel.getExtraDaysCount();
 
 			// send mails to all intended users
-			EvoportalEmailUtil.sendMailExtraDays(allUsers, totalFreeDays, newFreeDaysModel.getExtraDaysCount());
+//			EvoportalEmailUtil.sendMailExtraDays(allUsers, totalFreeDays, newFreeDaysModel.getExtraDaysCount());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

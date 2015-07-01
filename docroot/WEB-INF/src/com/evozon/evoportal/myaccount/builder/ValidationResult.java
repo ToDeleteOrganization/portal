@@ -8,16 +8,16 @@ public interface ValidationResult {
 	
 	public boolean hasMessages();
 
-	public List<AccountValidationMessage> getValidationErrors();
+	public List<AccountValidationResult> getValidationErrors();
 
-	public List<AccountValidationMessage> getValidationMessages();
+	public List<AccountValidationResult> getValidationMessages();
 
-	public void addErrors(List<AccountValidationMessage> errors);
+	public void addErrors(List<AccountValidationResult> errors);
 
-	public void addMessages(List<AccountValidationMessage> messages);
+	public void addMessages(List<AccountValidationResult> messages);
 	
-	public void addError(AccountValidationMessage errorMessage);
+	public void addError(AccountValidationResult errorMessage);
 
-	public void addMessage(AccountValidationMessage message);
+	public void addMessage(AccountValidationResult message);
 
 }

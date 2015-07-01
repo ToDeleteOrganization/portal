@@ -8,7 +8,7 @@ import javax.portlet.PortletRequest;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.evozon.evoportal.myaccount.builder.AccountValidationMessage;
+import com.evozon.evoportal.myaccount.builder.AccountValidationResult;
 import com.evozon.evoportal.myaccount.builder.Validator;
 
 // Add toString method to all subclasses
@@ -63,8 +63,8 @@ public abstract class AbstractValidator implements Validator {
 		return newString;
 	}
 
-	protected AccountValidationMessage buildValidationMessage(String msgKey, Object msgObj) {
-		return new AccountValidationMessage(msgKey, msgObj, getCategory());
+	protected AccountValidationResult buildValidationMessage(String msgKey, Object msgObj) {
+		return new AccountValidationResult(msgKey, msgObj, getCategory());
 	}
 
 	protected String getBundleMessage(PortletRequest request, String key) {

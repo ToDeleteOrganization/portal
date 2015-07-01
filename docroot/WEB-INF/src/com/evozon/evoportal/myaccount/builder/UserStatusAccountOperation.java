@@ -19,7 +19,7 @@ import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.User;
 import com.liferay.portal.service.UserLocalServiceUtil;
 
-public abstract class UserStatusAccountOperation extends ManagementAccountActionOperation {
+public abstract class UserStatusAccountOperation extends AbstractAccountActionOperation {
 
 	private static Log logger = LogFactoryUtil.getLog(UserStatusAccountOperation.class);
 

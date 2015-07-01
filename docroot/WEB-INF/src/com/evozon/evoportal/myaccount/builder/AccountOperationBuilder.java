@@ -24,6 +24,10 @@ import com.evozon.evoportal.myaccount.builder.validators.PhoneNumberValidator;
 import com.evozon.evoportal.myaccount.builder.validators.ScreenNameValidator;
 import com.evozon.evoportal.myaccount.builder.validators.SiteValidator;
 import com.evozon.evoportal.myaccount.builder.validators.UserProjectValidator;
+import com.evozon.evoportal.myaccount.worker.AddUserExpandoPropertiesUpdate;
+import com.evozon.evoportal.myaccount.worker.AddUserPMReportsIntegration;
+import com.evozon.evoportal.myaccount.worker.AddUserPhoneNumberUpdate;
+import com.evozon.evoportal.myaccount.worker.UpdateUserPMReportsIntegration;
 import com.liferay.compat.portal.util.PortalUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -68,41 +72,51 @@ public final class AccountOperationBuilder {
 	}
 
 	private static ActionAccountOperation buildActivateAccountOperation(ActionPhaseParameters app) {
-		ManagementAccountActionOperation restoreAccountCommandOperation = new ActivateAccountOperation(app);
+		AbstractAccountActionOperation restoreAccountCommandOperation = new ActivateAccountOperation(app);
 		return restoreAccountCommandOperation;
 	}
 
 	private static ActionAccountOperation buildDeactivateAccountOperation(ActionPhaseParameters app) throws PortalException, SystemException {
-		ManagementAccountActionOperation deactivateAccountCommandOperation = new DeactivateAccountOperation(app);
+		AbstractAccountActionOperation deactivateAccountCommandOperation = new DeactivateAccountOperation(app);
 		deactivateAccountCommandOperation.addValidationRule(new UserProjectValidator(app.getRequest()));
 		return deactivateAccountCommandOperation;
 	}
 
 	private static ActionAccountOperation buildDeleteAccountActionOperation(ActionPhaseParameters app) throws PortalException, SystemException {
-		ManagementAccountActionOperation deleteAccountCommandOperation = new DeleteAccountOperation(app);
+		AbstractAccountActionOperation deleteAccountCommandOperation = new DeleteAccountOperation(app);
 		User currentUser = PortalUtil.getUser(app.getRequest());
 		deleteAccountCommandOperation.addValidationRule(new DeleteAccountPermissionValidator(currentUser));
 		return deleteAccountCommandOperation;
 	}
 
 	private static ActionAccountOperation buildUpdateAccountActionOperation(final ActionPhaseParameters app) throws PortalException, SystemException {
-		ManagementAccountActionOperation updateAccountCommandOperation = new UpdateAccountOperation(app);
+		AbstractAccountActionOperation updateAccountCommandOperation = new UpdateAccountOperation(app);
 		AccountModelHolderStrategy accountFactory = AccountOperationBuilder.createUpdateAccountBuilder(app.getRequest());
 		AccountModelHolder newAccountHolder = accountFactory.buildNewAccountModelHolder();
 		updateAccountCommandOperation.setOldAccountModelHolder(accountFactory.buildOldAccountModelHolder());
 		updateAccountCommandOperation.setNewAccountModelHolder(newAccountHolder);
 		// TODO: customize validators for update operation
 		updateAccountCommandOperation.addValidationRules(AccountOperationBuilder.getAddAccountValidators(newAccountHolder));
+		
+		updateAccountCommandOperation.addActionWorker(new UpdateUserPMReportsIntegration());
+		updateAccountCommandOperation.addActionWorker(new UpdateUserExpandoProperties());
+		updateAccountCommandOperation.addActionWorker(new UpdatePersonalDetails());
+		
 		return updateAccountCommandOperation;
 	}
 
 	// TODO: add familyValidation for update
 	private static ActionAccountOperation buildAddAccountActionOperation(final ActionPhaseParameters app) {
-		ManagementAccountActionOperation addAccountCommandOperation = new AddAccountOperation(app);
+		AbstractAccountActionOperation addAccountCommandOperation = new AddAccountOperation(app);
 		AccountModelHolderStrategy accountModelFactory = AccountOperationBuilder.createAddAccountBuilder(app.getRequest());
 		AccountModelHolder newAccountModel = accountModelFactory.buildNewAccountModelHolder();
 		addAccountCommandOperation.setNewAccountModelHolder(newAccountModel);
 		addAccountCommandOperation.addValidationRules(AccountOperationBuilder.getAddAccountValidators(newAccountModel));
+
+		addAccountCommandOperation.addActionWorker(new AddUserPMReportsIntegration());
+		addAccountCommandOperation.addActionWorker(new AddUserExpandoPropertiesUpdate());
+		addAccountCommandOperation.addActionWorker(new AddUserPhoneNumberUpdate());
+
 		return addAccountCommandOperation;
 	}
 
@@ -134,7 +148,6 @@ public final class AccountOperationBuilder {
 		AccountModelHolderStrategy accountFactory = new UpdateAccountModelHolderStrategy();
 		accountFactory.setNewAccountModelHolderBuilder(new RequestAccountModelHolderBuilder(request));
 		accountFactory.setOldAccountModelHolderBuilder(new UserAccountModelHolderBuilder(selectedUser));
-
 		return accountFactory;
 	}
 

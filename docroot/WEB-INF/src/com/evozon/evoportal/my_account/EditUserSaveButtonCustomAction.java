@@ -64,11 +64,6 @@ public class EditUserSaveButtonCustomAction extends AccountCustomStrutsPortletAc
 	private static final String PRESENT = "present";
 
 	public void processAction(StrutsPortletAction originalStrutsPortletAction, PortletConfig portletConfig, ActionRequest actionRequest, ActionResponse actionResponse) throws Exception {
-//		AccountActionCommand accountCommand = createCommand(originalStrutsPortletAction, portletConfig, actionRequest, actionResponse);
-
-//		logger.debug("Executing command: " + accountCommand);
-//		accountCommand.executeCustomAction();
-
 		ActionPhaseParameters param = AccountPhaseFactory.getActionAccountPhase(originalStrutsPortletAction, portletConfig, actionRequest, actionResponse);
 		AccountActionPhase accountPhase = AccountPhaseFactory.getActionAccountPhase();
 

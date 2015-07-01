@@ -33,14 +33,13 @@ public class AccountActionPhase implements AccountPhase<ActionPhaseParameters> {
 		} catch (Exception e) {
 			logger.error(e);
 		}
-
 	}
 
-	private void addErrorsToSession(final List<AccountValidationMessage> validationErrors, final ActionRequest actionRequest) {
+	private void addErrorsToSession(final List<AccountValidationResult> validationErrors, final ActionRequest actionRequest) {
 		Set<String> categories = new HashSet<String>();
 
 		// Add error messages to session for UI rendering
-		for (AccountValidationMessage err : validationErrors) {
+		for (AccountValidationResult err : validationErrors) {
 			Object errorObj = err.getMessageObject();
 
 			if (errorObj instanceof Exception) {
@@ -57,9 +56,9 @@ public class AccountActionPhase implements AccountPhase<ActionPhaseParameters> {
 		}
 	}
 
-	private void addMessagesToSession(final List<AccountValidationMessage> validationMessages, final ActionRequest actionRequest) {
+	private void addMessagesToSession(final List<AccountValidationResult> validationMessages, final ActionRequest actionRequest) {
 
-		for (AccountValidationMessage msg : validationMessages) {
+		for (AccountValidationResult msg : validationMessages) {
 			SessionMessages.add(actionRequest, msg.getMessageKey(), msg.getMessageObject());
 		}
 	}

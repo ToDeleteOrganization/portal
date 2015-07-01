@@ -7,19 +7,22 @@ import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 
 import com.evozon.evoportal.my_account.AccountModelHolder;
-import com.evozon.evoportal.my_account.pmreports.integration.PMReportsIntegration;
-import com.evozon.evoportal.ws.pmreports.model.PmResponseStatus;
-import com.evozon.evoportal.ws.pmreports.util.PMReportsIntegrationUtil;
+import com.evozon.evoportal.myaccount.worker.ActionWorker;
 import com.liferay.compat.portal.util.PortalUtil;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.servlet.SessionErrors;
+import com.liferay.portal.model.User;
 
 public abstract class AbstractAccountActionOperation implements ActionAccountOperation {
 
 	private static Log logger = LogFactoryUtil.getLog(AbstractAccountActionOperation.class);
 
 	protected final List<Validator> validationRules = new ArrayList<Validator>();
+
+	protected final List<ActionWorker> actionWorkers = new ArrayList<ActionWorker>();
 
 	private final ActionPhaseParameters actionPhaseParameters;
 
@@ -34,7 +37,7 @@ public abstract class AbstractAccountActionOperation implements ActionAccountOpe
 	public void execute() throws Exception {
 		// TODO: add general behavior before executing the actual action
 		executeDefaultLiferayProcess();
-		if (SessionErrors.isEmpty(actionPhaseParameters.getRequest())) {
+		if (SessionErrors.isEmpty(getActionRequest())) {
 			executeInternalAction();
 		}
 	}
@@ -61,6 +64,16 @@ public abstract class AbstractAccountActionOperation implements ActionAccountOpe
 		return validationResult;
 	}
 
+	protected void executeInternalAction() {
+		for (ActionWorker worker : actionWorkers) {
+			try {
+				worker.execute(this);
+			} catch (Exception e) {
+				logger.error("Worker " + worker + " has failed for " + getClass().getSimpleName(), e);
+			}
+		}
+	}
+
 	public void addValidationRule(Validator validator) {
 		this.validationRules.add(validator);
 	}
@@ -71,22 +84,19 @@ public abstract class AbstractAccountActionOperation implements ActionAccountOpe
 		}
 	}
 
+	public void addActionWorker(ActionWorker actionWorker) {
+		this.actionWorkers.add(actionWorker);
+	}
+
+	public void addActionWorkers(List<ActionWorker> actionWorkers) {
+		if ((actionWorkers != null) && !actionWorkers.isEmpty()) {
+			this.actionWorkers.addAll(actionWorkers);
+		}
+	}
+
 	protected void executeDefaultLiferayProcess() throws Exception {
 		ActionAccountOperation defaultActionOp = new DefaultAccountActionOperation(actionPhaseParameters);
 		defaultActionOp.execute();
-	}
-
-	protected void executePMReportsIntegration(final PMReportsIntegration pmRepIntegration) {
-		if (PMReportsIntegrationUtil.isPmReportsIntegrationActivated()) {
-			PmResponseStatus interationResponse = pmRepIntegration.executeIntegration();
-
-			if (interationResponse != null) {
-				// TODO: add general behavior depending on the response
-				logger.info("Integration: " + pmRepIntegration.getClass().getName() + " ended with status " + interationResponse);
-			}
-		} else if (logger.isDebugEnabled()) {
-			logger.debug("PM Reports connection is disabled for this server.");
-		}
 	}
 
 	protected ActionRequest getActionRequest() {
@@ -97,7 +107,7 @@ public abstract class AbstractAccountActionOperation implements ActionAccountOpe
 		return actionPhaseParameters.getResponse();
 	}
 
-	protected Long getCompanyId() {
+	public Long getCompanyId() {
 		return PortalUtil.getCompanyId(getActionRequest());
 	}
 
@@ -105,10 +115,24 @@ public abstract class AbstractAccountActionOperation implements ActionAccountOpe
 		this.newAccountModelHolder = newAccountHolder;
 	}
 
+	public AccountModelHolder getNewAccountModelHolder() {
+		return newAccountModelHolder;
+	}
+
 	public void setOldAccountModelHolder(AccountModelHolder oldAccountHolder) {
 		this.oldAccountModelHolder = oldAccountHolder;
 	}
 
-	protected abstract void executeInternalAction();
+	public AccountModelHolder getOldAccountModelHolder(AccountModelHolder oldAccountHolder) {
+		return oldAccountModelHolder;
+	}
+
+	public User getCurrentUser() throws PortalException, SystemException {
+		return PortalUtil.getUser(getActionRequest());
+	}
+
+	public User getSelectedUser() throws PortalException, SystemException {
+		return PortalUtil.getSelectedUser(getActionRequest());
+	}
 
 }
