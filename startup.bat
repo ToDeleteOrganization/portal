@@ -15,5 +15,5 @@ rem See the License for the specific language governing permissions and
 rem limitations under the License.
 
 push by nunu
-
+second push by nunu
 echo This is a test for portal\startup.bat
